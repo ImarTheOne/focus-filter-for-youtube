@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Focus Filter for YouTube — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Focus Filter for YouTube</h1>
+    <p class="sub">Your feed loads normally. When you open a video, a Gemini model
+      checks it against your rules — from its title, description and tags, or by
+      actually watching it — and anything blocked never gets watched.</p>
+  </header>
+
+  <section class="card">
+    <h2>Google AI Studio API key</h2>
+    <p class="hint">Create a free key at
+      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a>.
+      It is stored only in this browser profile and sent only to Google's API.</p>
+
+    <p class="notice"><strong>Before you paste a key, two things Google's terms
+      make your responsibility.</strong></p>
+    <ul class="notice-list">
+      <li><strong>You must be 18 or older.</strong> The
+        <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noreferrer">Gemini
+        API terms</a> require it, and they also forbid using the API in a service
+        aimed at under-18s. This extension is not a parental control and must not
+        be set up on behalf of a child.</li>
+      <li><strong>On Google's free tier the videos you open are not private.</strong>
+        Google states that content submitted through an unpaid key is used to
+        improve Google's products and that <em>human reviewers may read, annotate
+        and process</em> it. What gets submitted is the details of a video you
+        opened — title, channel, description and tags — and, if you let Gemini
+        watch videos, the video's link, which Google uses to process its picture
+        and sound. On a paid key Google states it does not use prompts to
+        improve its products.</li>
+    </ul>
+
+    <label class="field inline gate">
+      <input type="checkbox" id="ageConfirmed">
+      <span>I am 18 or older, and I understand what is sent to Google.</span>
+    </label>
+
+    <div class="row">
+      <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" spellcheck="false">
+      <button type="button" id="toggleKey" class="ghost">Show</button>
+    </div>
+    <div class="row">
+      <button type="button" id="testKey" class="ghost">Test connection</button>
+      <span id="testResult" class="status"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Model</h2>
+    <select id="model"></select>
+    <div class="row">
+      <button type="button" id="loadModels" class="ghost">Load models from my key</button>
+      <span id="modelResult" class="status"></span>
+    </div>
+    <p class="hint">Google retires model names regularly. If you get a <strong>404</strong>,
+      it means the selected model does not exist for your key — load the list and
+      pick a real one. A Flash-Lite tier is plenty for this job: one request
+      covers 15 videos.</p>
+  </section>
+
+  <section class="card">
+    <h2>How closely to check a video</h2>
+    <label class="check"><input type="radio" name="reviewMode" value="standard">
+      <span><strong>Standard</strong> — judge it from its title, channel, description
+        and tags. Fast and cheap, but a misleading title can fool it.</span></label>
+    <label class="check"><input type="radio" name="reviewMode" value="smart">
+      <span><strong>Smart</strong> — start from the details, and have Gemini
+        <em>watch the video</em> when they don't make clear what's in it, or when
+        it's a close call. <em>(recommended)</em></span></label>
+    <label class="check"><input type="radio" name="reviewMode" value="deep">
+      <span><strong>Thorough</strong> — Gemini watches every video you open before
+        it decides.</span></label>
+
+    <div id="deepOptions">
+      <label class="field inline" style="margin-top: 12px;">
+        <span>Watch up to</span>
+        <select id="deepMinutes">
+          <option value="3">3 minutes</option>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="20">20 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="0">the whole video</option>
+        </select>
+        <span>of each video</span>
+      </label>
+      <label class="check"><input type="radio" name="deepWhile" value="hold"> Keep the video paused until the check is done, behind a breathing exercise you can't skip <em>(usually 10–40 s)</em></label>
+      <label class="check"><input type="radio" name="deepWhile" value="play"> Let it play, and stop it if the check says no</label>
+      <p class="hint">Gemini is given the video's public link; Google fetches and
+        processes it — this extension never downloads it. Only public videos can be
+        watched: unlisted videos and live streams fall back to the details. A free
+        key can watch about <strong>8 hours of YouTube video a day</strong> in total, so
+        a shorter limit lets you check more videos. Each verdict is cached, so a
+        video is only ever watched once.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>What counts as productive <em>for you</em></h2>
+    <p class="hint">This text is handed to the model verbatim. The more specific you
+      are, the better it judges.</p>
+    <textarea id="goals" rows="10" spellcheck="false"></textarea>
+  </section>
+
+  <section class="card">
+    <h2>Never show me this <em>(zero tolerance)</em></h2>
+    <p class="hint">One thing per line, in plain words. A video that contains
+      any of it is blocked completely — even when it is only a small part and
+      the rest is exactly what you want. This beats your category rules and the
+      score.</p>
+    <textarea id="neverRules" rows="4" spellcheck="false"
+              placeholder="swearing or crude sexual jokes&#10;gambling or betting, sponsor segments included&#10;footage of real violence"></textarea>
+    <p class="hint" id="neverCoverage"></p>
+  </section>
+
+  <section class="card">
+    <h2>Content rules</h2>
+    <p class="hint">What kind of video you don't want, one rule per line — a
+      full sentence or just a topic. A rule blocks a video when it fits the
+      video as a whole or a substantial part of it, whatever its category or
+      score. A passing mention is not enough; for that, use the list above.
+      When Gemini watches a video it judges these on what is actually in it,
+      which is where they shine.</p>
+    <textarea id="blockRules" rows="5" spellcheck="false"
+              placeholder="is mostly a sponsor read or an ad&#10;reaction videos&#10;promotes crypto trading or get-rich-quick schemes&#10;spoils the ending of a film or series"></textarea>
+  </section>
+
+  <section class="card">
+    <h2>Category rules</h2>
+    <p class="hint">Every video gets one category. <strong>Allow</strong> and
+      <strong>Block</strong> are absolute and ignore the score entirely — set
+      Gaming to Block and no gaming video ever reaches you. <strong>Judge</strong>
+      hands it to the strictness score below.</p>
+    <div class="row" style="margin-bottom: 4px;">
+      <button type="button" id="allJudge" class="ghost">Set all to Judge</button>
+      <span id="ruleSummary" class="status"></span>
+    </div>
+    <div id="categoryRules" class="rules"></div>
+  </section>
+
+  <section class="card">
+    <h2>Strictness</h2>
+    <p class="hint" id="thresholdScope"></p>
+    <div class="slider-row">
+      <input type="range" id="threshold" min="0" max="100" step="5">
+      <output id="thresholdOut"></output>
+    </div>
+    <p class="hint" id="thresholdHint"></p>
+  </section>
+
+  <section class="card">
+    <h2>When a video is blocked</h2>
+    <label class="check"><input type="checkbox" id="enforceWatch"> Check videos when I open them <em>(the main mode)</em></label>
+    <label class="field" style="margin-top: 12px;">
+      <span>Send me here instead <em>(leave empty to show a blocking screen on the video)</em></span>
+      <input type="text" id="redirectUrl" spellcheck="false" autocomplete="off"
+             placeholder="https://news.ycombinator.com">
+    </label>
+    <span id="redirectResult" class="status"></span>
+    <p class="hint">Opening a blocked video navigates you straight here instead.
+      The address has to be outside YouTube. Note there is no "watch anyway"
+      button once you set this — you are gone before the page loads.</p>
+  </section>
+
+  <section class="card">
+    <h2>Pause before every video</h2>
+    <label class="check"><input type="checkbox" id="breathe"> Hold every video behind a breathing exercise first</label>
+    <label class="field inline" style="margin-top: 12px;">
+      <span>for</span>
+      <select id="breatheSeconds">
+        <option value="5">5 seconds</option>
+        <option value="10">10 seconds</option>
+        <option value="15">15 seconds</option>
+        <option value="25">25 seconds</option>
+        <option value="40">40 seconds</option>
+        <option value="60">60 seconds</option>
+      </select>
+    </label>
+    <label class="check"><input type="checkbox" id="verse"> Show a Bible verse of the day on the breathing screen</label>
+    <p class="hint">Every video and Short stays paused first — also one that
+      was checked before and is fine. The screen guides your breathing: the
+      circle grows while you breathe in and shrinks while you breathe out, and
+      a counter shows how much is left. There is no way to skip it, and the
+      seconds only count while you are looking at the tab. Whether the video is
+      blocked, you learn after the pause. The verse changes every day and comes
+      from a list of over 500 that ships with the extension (World English Bible,
+      public domain). None of this needs an API key or sends anything anywhere.</p>
+  </section>
+
+  <section class="card">
+    <h2>Insane mode</h2>
+    <label class="check"><input type="checkbox" id="insane"> Check every video before it plays, with no way around it</label>
+    <p class="hint">Gemini watches every video and Short you open, whatever you
+      picked under <em>How closely to check</em>, and your always-allowed channels
+      are checked too. Until the check is done the video stays paused behind the
+      breathing circle, however long that takes, and there is no skip and no
+      "Watch anyway". A video that cannot be checked stays blocked. A blocked
+      video offers a button straight back to the YouTube home page. Needs an
+      API key, and a free key only covers about 8 hours of watched video a day.</p>
+  </section>
+
+  <section class="card">
+    <h2>Also filter the feed <em>(optional)</em></h2>
+    <p class="hint">Off by default: your home page loads completely untouched and
+      nothing is sent to Google until you actually click a video. Turning these on
+      hides tiles before you click them, but costs an API call for every video
+      that scrolls past.</p>
+    <label class="check"><input type="checkbox" data-surface="home"> Home page</label>
+    <label class="check"><input type="checkbox" data-surface="related"> Sidebar next to a video</label>
+    <label class="check"><input type="checkbox" data-surface="search"> Search results</label>
+    <label class="check"><input type="checkbox" data-surface="subscriptions"> Subscriptions feed</label>
+    <label class="check"><input type="checkbox" data-surface="shorts"> Shorts, anywhere they appear</label>
+    <hr>
+    <label class="check"><input type="checkbox" id="shortsAlwaysTrash"> Treat every Short as rubbish without asking the model</label>
+  </section>
+
+  <section class="card">
+    <h2>How blocked videos look</h2>
+    <label class="check"><input type="radio" name="blockMode" value="hide"> Remove them completely</label>
+    <label class="check"><input type="radio" name="blockMode" value="placeholder"> Show a small card with the reason and a "Show anyway" button</label>
+  </section>
+
+  <section class="card">
+    <h2>Channels and title words</h2>
+    <label class="field">
+      <span>Always allow these channels <em>(one per line)</em></span>
+      <textarea id="allowChannels" rows="4" spellcheck="false"
+                placeholder="3Blue1Brown&#10;@veritasium"></textarea>
+    </label>
+    <p id="allowNote" class="status err" style="margin: -8px 0 14px;" hidden>Ignored while Insane mode is on: it checks every video.</p>
+    <label class="field">
+      <span>Always block these channels <em>(one per line)</em></span>
+      <textarea id="blockChannels" rows="4" spellcheck="false"
+                placeholder="DramaAlert&#10;https://www.youtube.com/@somechannel"></textarea>
+    </label>
+    <label class="field">
+      <span>Always block titles containing <em>(one word or phrase per line)</em></span>
+      <textarea id="blockKeywords" rows="4" spellcheck="false"
+                placeholder="prank&#10;react*&#10;you won't believe"></textarea>
+    </label>
+    <p class="hint">Write a channel as its name, its @handle or its link. Names
+      and title words match <strong>whole words</strong>, ignoring case and accents:
+      <em>Vox</em> finds "Vox" and "Vox Media" but not "Voxel". End a word with
+      <strong>*</strong> to cover its endings: <em>react*</em> also finds "reacts" and
+      "reaction". An @handle or a link means exactly that one channel. Blocked
+      beats allowed, and these lists beat every other rule on this page. They
+      are matched here in the browser and work without an API key; a video
+      they decide is never sent to Google.</p>
+  </section>
+
+  <section class="card">
+    <h2>Cache</h2>
+    <label class="field inline">
+      <span>Remember each verdict for</span>
+      <input type="number" id="cacheTtlDays" min="0" max="365" step="1">
+      <span>days (0 = forever)</span>
+    </label>
+    <div class="row">
+      <button type="button" id="clearCache" class="ghost">Clear cached verdicts</button>
+      <button type="button" id="resetStats" class="ghost">Reset counters</button>
+      <span id="cacheResult" class="status"></span>
+    </div>
+  </section>
+
+  <footer class="bar">
+    <button type="button" id="save" class="primary">Save settings</button>
+    <span id="saveResult" class="status"></span>
+  </footer>
+
+  <p class="legal">YouTube™ and Gemini™ are trademarks of Google LLC. This
+    extension is an independent project and is not affiliated with, sponsored by
+    or endorsed by Google LLC. It does not block, modify or replace advertising,
+    and it does not download video.</p>
+</main>
+<script src="common.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
