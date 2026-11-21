@@ -12,10 +12,16 @@ HOW IT WORKS
 • Block is absolute: set Gaming to Block and no gaming video plays, ever.
 • Judge hands the video to a 0-100 productivity score, measured against a
   description of your goals that you write yourself.
+• Optional Strict mode, as strict as you want it: a hard limit under which a
+  video is blocked with no "Watch anyway" and disappears from your home page,
+  a daily number of "Watch anyway", and Insane mode, where Gemini checks
+  every video before it plays. Making it less strict waits up to a week, as
+  long as you choose.
 • Write your own content rules in plain words - "is mostly a sponsor read",
   "spoils the ending of a film" - and any video that matches is blocked.
 • Zero tolerance: list what you never want to see, and a video that contains
-  any of it is blocked, even when the rest is exactly what you want.
+  any of it is blocked, even when the rest is exactly what you want - with no
+  "Watch anyway".
 • Choose how closely to check: Standard (from the details), Smart, the default (Gemini
   watches the video when the details are not conclusive), or Thorough (Gemini
   watches every video you open). The blocking screen tells you what is
@@ -24,7 +30,7 @@ HOW IT WORKS
   choose.
 • Optional: a pause before every video. A guided breathing exercise holds it
   for 5 to 60 seconds, with no skip button, so you decide on purpose. It can
-  show a Bible verse of the day, from a list that ships with the add-on.
+  show a Bible verse of the day, from a list that ships with the extension.
 
 WHAT MAKES IT CHEAP
 
@@ -41,23 +47,48 @@ This extension has no server and no subscription. You supply a free Google AI
 Studio key (aistudio.google.com/apikey), and it is stored only in your browser.
 Typical use sits inside Google's free tier.
 
+AGE REQUIREMENT: 18+
+
+Google's Gemini API terms require every API user to be 18 or older, and forbid
+using the API in a service aimed at under-18s. This extension is a self-control
+tool for adults. It is NOT a parental control and must not be set up on a
+child's behalf.
+
 PRIVACY
 
 Only the details of a video you open (title, channel, description, tags,
 YouTube category, length) are transmitted, and - in Smart or Thorough mode - the
-video's public link, so Google can fetch and watch it. Everything goes only to
+video's public link, so Google can fetch and watch it. If you turn on feed
+filtering, the title, channel and length of the videos on the pages you pick
+are sent too. Everything goes only to
 Google's API using your key. No analytics, no telemetry, no developer server.
 Your browsing history, account details and watch history are never touched, and
-the add-on never downloads or uploads video or audio.
+the extension never downloads or uploads video or audio. Channel and keyword rules are
+matched inside your browser and never leave it.
+
+One thing you should know before choosing a key: on Google's FREE tier outside
+the EEA, Switzerland and the UK, Google states that submitted content is used to
+improve Google's products and that human reviewers may read it. What is
+submitted is the details, and possibly the link, of a video you opened. On a
+PAID key, and on any key in the EEA, Switzerland and the UK, Google states it
+does not use prompts to improve its products. The full detail is in the privacy
+policy.
+
+WHAT THIS IS NOT
+
+It does not block, modify or replace advertising. It does not download video. It
+does not bypass any paywall, sign-in or protection measure. It reads the details
+of a video you have already opened and applies rules you wrote.
 
 OPTIONAL: FILTER THE FEED TOO
 
 If you would rather never see the rubbish in the first place, you can turn on
-feed filtering for the home page, search, sidebar, subscriptions or Shorts.
-It is off by default because it costs an API call for every video that scrolls
-past.
+feed filtering for the home page, search, sidebar, subscriptions or Shorts,
+or only remove the videos under your hard limit from the home page. It is off
+by default because it costs an API call for every 15 videos that scroll past.
 
-OPEN SOURCE
+---
+YouTube™ and Gemini™ are trademarks of Google LLC. This extension is an independent
+project and is not affiliated with, sponsored by or endorsed by Google LLC.
 
-MIT licensed. No build step, no minification and no remote code: the published
-package is the complete, readable source.
+Open source (MIT): https://github.com/ImarTheOne/focus-filter-for-youtube

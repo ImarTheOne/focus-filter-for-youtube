@@ -95,11 +95,13 @@ Your browsing history, account details and watch history are never touched, and
 the add-on never downloads or uploads video or audio. Channel and keyword rules are
 matched inside your browser and never leave it.
 
-One thing you should know before choosing a key: on Google's FREE tier, Google
-states that submitted content is used to improve Google's products and that
-human reviewers may read it. What is submitted is the details, and possibly the
-link, of a video you opened. On a PAID key Google states it does not use prompts to improve
-its products. The full detail is in the privacy policy.
+One thing you should know before choosing a key: on Google's FREE tier outside
+the EEA, Switzerland and the UK, Google states that submitted content is used to
+improve Google's products and that human reviewers may read it. What is
+submitted is the details, and possibly the link, of a video you opened. On a
+PAID key, and on any key in the EEA, Switzerland and the UK, Google states it
+does not use prompts to improve its products. The full detail is in the privacy
+policy.
 
 WHAT THIS IS NOT
 
@@ -190,7 +192,8 @@ self-control tool configured by the adult who owns the key.
 FREE-TIER DATA USE (disclosed, not hidden)
 Google's terms state that content submitted on an unpaid key is used to improve
 Google's products and may be read by human reviewers, whereas paid keys are not
-used for product improvement. Because the submitted content is the details
+used for product improvement; in the EEA, Switzerland and the UK the paid-use
+rules apply to unpaid keys too. Because the submitted content is the details
 (and, in Smart/Thorough mode, the link) of a video the user opened, this is disclosed in plain language in the listing, in
 the privacy policy, and on the settings page next to the key field, so the user
 can choose a paid key or rely on local-only channel/keyword rules instead.

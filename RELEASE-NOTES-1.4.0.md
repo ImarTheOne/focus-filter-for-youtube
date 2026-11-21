@@ -17,6 +17,7 @@ Version 1.4.0 adds **Strict mode**: one switch that holds everything that takes 
 - **Saving reloads your open YouTube tabs.** Before, a video that was already playing was never checked against new settings. Now every open YouTube tab reloads itself when you save or use the popup's switch, and the settings page and popup say so beforehand. A refreshed model list or a Strict mode change that is only waiting does not reload anything.
 - **Smart mode looks closer near the hard limit.** A score within 12 points of the hard limit now makes Gemini watch the video, because that block cannot be overridden.
 - **The privacy policy now says what feed filtering sends:** the title, channel name, length, views line and Short flag of each video tile on the pages you picked. Earlier versions sent the same when feed filtering was on, but the policy did not spell it out. It also lists the new local "Watch anyway" counter.
+- **Firefox now also shows "browsing activity" in the data the add-on sends.** In Smart and Thorough mode the link of a video you open goes to Google so Gemini can watch it. That has been so since 1.1.0 and was in the privacy policy; now Firefox declares it too, and may ask you to accept it when it updates. Standard mode never sends the link. The privacy policy also gained a Limited Use section for the Chrome Web Store.
 
 ## Upgrading
 

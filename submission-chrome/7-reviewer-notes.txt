@@ -9,22 +9,40 @@ extension without a Gemini API key of their own.
 ================================================================
 
 WHAT IT DOES
-When the user opens a YouTube video, the content script reads the video's title
-and channel name from the page and sends them to Google's Gemini API. The model
-returns a category (from a fixed 20-item list) and optionally a 0-100 score. The
-extension then blocks or allows the video according to rules the user
-configured.
+When the user opens a YouTube video, the content script reads the video's
+details (title, channel, description, tags, YouTube category, length) from the
+page and sends them to Google's Gemini API. The model returns a category (from
+a fixed 20-item list) and a 0-100 score. The extension then blocks or allows
+the video according to rules the user configured. Channel lists and blocked
+title words are matched locally, without any request.
 
-HOW TO TEST
-1. Install and open the settings page (it opens automatically on install).
-2. A free Google AI Studio API key is required: https://aistudio.google.com/apikey
-   Without a key the extension is completely inert - it makes no requests and
-   does not modify any page.
-3. Paste the key and press "Test connection". This calls the Gemini API once and
-   reports the result.
-4. Press "Load models from my key" to populate the model dropdown.
-5. In "Category rules", set for example Gaming to Block, and save.
-6. Open any gaming video on YouTube. The player is paused and a blocking screen
+Optional, all off by default: feed filtering (judges video tiles before they
+are clicked), a pause of 5-60 seconds before every video, and Strict mode
+(a hard score limit with no "Watch anyway", a daily number of "Watch anyway",
+and a delay before settings can be loosened - kept in local storage under
+"strictPending" until its time; nothing is sent anywhere). Saving settings
+makes each YouTube tab's content script reload its own tab
+(storage.onChanged -> location.reload()); no tabs permission is used.
+
+HOW TO TEST WITHOUT A KEY
+1. Install; the settings page opens automatically.
+2. Under "Channels and title words", add a word from a YouTube video's title
+   to "Always block titles containing" (e.g. "vector*"), and save.
+3. Open a video with that word in its title, e.g.
+   https://www.youtube.com/watch?v=fNk_zzaMoSs - the player is paused and a
+   blocking screen shows "Take me back" and "Watch anyway".
+   No request is made: local rules never reach Google.
+4. Optional: under "Pause before every video", tick "Hold every video behind
+   a breathing exercise first", save, and open any video - a
+   breathing exercise holds it for the chosen seconds, then it plays.
+5. Optional: tick Strict mode, set "Allow Watch anyway only 1 time a day",
+   save, and open the blocked video twice - the second time the button is gone.
+
+HOW TO TEST WITH A KEY
+1. A free Google AI Studio API key: https://aistudio.google.com/apikey
+   Tick the 18+ confirmation, paste the key and press "Test connection".
+2. In "Category rules", set for example Gaming to Block, and save.
+3. Open any gaming video on YouTube. The player is paused and a blocking screen
    appears. If a redirect address is configured instead, the tab navigates there.
 
 NETWORK ACTIVITY
@@ -43,7 +61,7 @@ user's settings, and a cache of verdicts (video ID, category, score, reason,
 and for watched videos a short summary) capped at
 5000 entries with a 30-day default TTL.
 Never accessed: browsing history, cookies, account data, watch history. The
-add-on never downloads or uploads video or audio.
+extension never downloads or uploads video or audio.
 
 THE API KEY IS NOT COLLECTED DATA
 The user supplies their own Google AI Studio key. It is stored in local
@@ -55,7 +73,7 @@ PERMISSIONS
 - *://*.youtube.com/*  read the details of an opened video; block or redirect it
 - https://generativelanguage.googleapis.com/*  send those details (and optionally
   the video's public link) to Gemini
-- storage  persist the key, settings and cache locally
+- storage  persist the key, settings, cache and the Strict-mode counter locally
 
 SOURCE CODE
 No build step, no minification, no bundler, no remote code. The submitted

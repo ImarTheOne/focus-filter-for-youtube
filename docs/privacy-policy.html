@@ -52,7 +52,7 @@
 <p>Focus Filter for YouTube is an independent open-source project developed by a private individual in <strong>Switzerland</strong>. Contact: <a href="mailto:kontoonlyne@gmail.com">kontoonlyne@gmail.com</a></p>
 <p>Because the add-on has no backend, the developer never receives, stores or processes your personal data. The only outbound request the add-on makes goes from <strong>your</strong> browser to <strong>Google</strong>, authenticated with <strong>your own</strong> API key — that is a relationship directly between you and Google, under Google&#x27;s terms.</p>
 <h2>You must be 18 or older</h2>
-<p>Google&#x27;s <a href="https://ai.google.dev/gemini-api/terms">Gemini API terms</a> require every API user to be <strong>18 years of age or older</strong>, and prohibit using the API as part of a service directed towards, or likely to be accessed by, individuals under 18.</p>
+<p>Google&#x27;s <a href="https://aistudio.google.com/docs/terms">Gemini API terms</a> require every API user to be <strong>18 years of age or older</strong>, and prohibit using the API as part of a service directed towards, or likely to be accessed by, individuals under 18.</p>
 <p>By supplying a key and using this add-on you confirm you are 18 or older. <strong>This add-on is not a parental control</strong>, must not be marketed or configured as one, and must not be set up on a child&#x27;s behalf.</p>
 <h2>What is sent, and to whom</h2>
 <p>When you open a YouTube video, the add-on sends <strong>the video&#x27;s details</strong> to the Google Gemini API (<code>generativelanguage.googleapis.com</code>) so the model can judge it against your rules. The details are the video&#x27;s <strong>title, channel name, description (up to the first 1,500 characters), tags, YouTube category and length</strong>, all read from the page you opened. Your goals text and your two lists of rules (what you never want to see, and your content rules) are sent with them, because they are the question the model is answering. The request is authenticated with <strong>your own Google AI Studio API key</strong>, which you supply.</p>
@@ -62,19 +62,21 @@
 <h3>If you filter the feed</h3>
 <p>Feed filtering is off by default. It is on when you tick a page under <strong>Also filter the feed</strong> (home page, sidebar, search results, subscriptions, Shorts), or tick <strong>Also remove those videos from the YouTube home page</strong> under the hard limit. Then, for each video tile on that page, the add-on sends its <strong>title, channel name, length, the line showing its views and age, and whether it is a Short</strong>, up to 15 tiles per request, so the model can judge it before you click it. No description, tags or link are sent for a tile.</p>
 <p>These are the only network requests the add-on makes. There is no analytics, no telemetry, no error reporting and no server operated by the developer. Your data is never sent to the developer, because there is nowhere for it to be sent.</p>
-<h3>Important: what Google does with it on a free key</h3>
-<p>Google&#x27;s terms distinguish sharply between unpaid and paid use:</p>
+<h3>Important: what Google does with it</h3>
+<p>Google&#x27;s terms (version effective 23 March 2026) distinguish between unpaid and paid use, and treat Europe differently:</p>
 <ul>
-<li><strong>Unpaid (free) API keys</strong> — Google states that it uses the content you submit to &quot;provide, improve, and develop Google products&quot;, and that <strong>human reviewers may read, annotate and process your API input and output</strong>.</li>
-<li><strong>Paid API keys</strong> — Google states that it does <strong>not</strong> use your prompts or the responses to improve its products, and logs data only to detect abuse.</li>
+<li><strong>Paid use</strong> (a key from a Google Cloud project with billing turned on) — Google states that it does <strong>not</strong> use your prompts or the responses to improve its products. It processes them under its Data Processing Addendum, as a processor, and logs them for a limited period solely to detect and prevent abuse.</li>
+<li><strong>Unpaid (free) use, if you are in the EEA, Switzerland or the United Kingdom</strong> — Google states that the paid-use rules above apply to you too, even though the key is free.</li>
+<li><strong>Unpaid (free) use everywhere else</strong> — Google states that it uses the content you submit and the responses to &quot;provide, improve, and develop&quot; its products, and that <strong>human reviewers may read, annotate, and process</strong> your input and output. Google says it disconnects the data from your Google Account, API key and Cloud project before reviewers see it.</li>
 </ul>
-<p>What is submitted is the details of a video you chose to open, and in Smart or Thorough mode possibly its link, plus your goals and your rules. With feed filtering on, it is also the titles and channels of the videos on the pages you picked. On a free key you should assume that information is retained by Google and may be read by a person. If that matters to you, use a paid key, or restrict the add-on to the channel and title-word lists, which never leave your browser.</p>
-<p>The developer has no influence over any of this and no visibility into it. Google&#x27;s handling is governed solely by Google&#x27;s own terms: <a href="https://ai.google.dev/gemini-api/terms">https://ai.google.dev/gemini-api/terms</a></p>
+<p>What is submitted is the details of a video you chose to open, and in Smart or Thorough mode possibly its link, plus your goals and your rules. With feed filtering on, it is also the titles and channels of the videos on the pages you picked. On a free key outside the EEA, Switzerland and the UK you should assume that this information is kept by Google and may be read by a person. If that matters to you, use a paid key, or restrict the add-on to the channel and title-word lists, which never leave your browser.</p>
+<p>Google states that it may store the data transiently or cache it in any country where Google or its agents have facilities, so it can be processed outside Switzerland and the EEA.</p>
+<p>The developer has no influence over any of this and no visibility into it. Google&#x27;s handling is governed solely by Google&#x27;s own terms, which you accept with Google when you create your key: <a href="https://aistudio.google.com/docs/terms">https://aistudio.google.com/docs/terms</a></p>
 <h2>What is never sent</h2>
 <ul>
 <li>Your browsing history as such — no list of pages you have visited is ever compiled, read or transmitted. What <em>is</em> sent is the details of a video at the moment you open it, and with feed filtering on the tiles of the pages you picked, as described above</li>
 <li>Your Google, YouTube or any other account details</li>
-<li>Cookies, watch history, or anything identifying you</li>
+<li>Cookies, watch history, or anything identifying you — apart from your API key itself, which tells Google whose request it is</li>
 <li>The video itself — the add-on never downloads, captures or uploads video or audio. (In Smart or Thorough mode Google fetches a public video from YouTube by its link; see above.)</li>
 <li>Page contents beyond the details listed above</li>
 </ul>
@@ -87,6 +89,8 @@
 <li>Your settings (category rules, both lists of rules, redirect address, channel and title-word lists, goals text)</li>
 <li>A cache of previous verdicts (video ID, category, score, a short reason and, for watched videos, a one-paragraph summary of what is in them), kept for 30 days by default and capped at 5,000 entries</li>
 <li>In Strict mode with a daily limit, how many times you used &quot;Watch anyway&quot; today: a count and the date, nothing about which videos</li>
+<li>In Strict mode, a change that makes it less strict while it waits for the delay you chose, with the time it applies</li>
+<li>Counters shown in the toolbar popup (videos allowed, blocked and watched, API calls, errors) and the last error message from Google&#x27;s API with its time</li>
 </ul>
 <p>Removing the add-on deletes all of it. You can clear the cache at any time from the settings page.</p>
 <h2>How this maps to the Chrome Web Store disclosures</h2>
@@ -97,18 +101,26 @@
 <tr><td><strong>Authentication information</strong></td><td>Your own Google AI Studio API key, which you paste in yourself. Stored locally; sent only to Google, to authenticate your own request. Never sent to the developer.</td></tr>
 </tbody></table></div>
 <p>Nothing else is declared, and nothing else is collected: no personally identifiable information, no health or financial data, no personal communications, no location, and no user-activity tracking of any kind.</p>
+<h2>How this maps to Firefox&#x27;s data collection permissions</h2>
+<p>Firefox shows the data an add-on transmits when you install it. This add-on declares two kinds, both required for it to work:</p>
+<div class="table-wrap"><table><thead><tr><th>Declared</th><th>What it actually is</th></tr></thead><tbody>
+<tr><td><strong>Website content</strong></td><td>The details of a video you open (and, with feed filtering on, of the video tiles on the pages you picked), as described above.</td></tr>
+<tr><td><strong>Browsing activity</strong></td><td>The link of a video you open, sent in Smart or Thorough mode so Google can watch it. No list of visited pages is built, stored or transmitted.</td></tr>
+</tbody></table></div>
+<h2>Limited Use</h2>
+<p>The use of information received through this extension adheres to the <a href="https://developer.chrome.com/docs/webstore/program-policies/">Chrome Web Store User Data Policy</a>, including its Limited Use requirements. The data described above is used for one purpose only: judging the videos you open against your own rules. It is not sold, not used for advertising, not used to determine creditworthiness, and not transferred to anyone except Google&#x27;s Gemini API, which performs that judging under your own key. The developer receives none of it, so no one on the developer&#x27;s side can read it.</p>
 <h2>Permissions and why they are needed</h2>
 <div class="table-wrap"><table><thead><tr><th>Permission</th><th>Why</th></tr></thead><tbody>
 <tr><td><code><em>://</em>.youtube.com/*</code></td><td>To read the details of a video you open and to block or redirect it.</td></tr>
 <tr><td><code>https://generativelanguage.googleapis.com/*</code></td><td>To send those details, and optionally the video&#x27;s link, to Google&#x27;s Gemini API for judging.</td></tr>
-<tr><td><code>storage</code></td><td>To save your key, settings and verdict cache locally.</td></tr>
+<tr><td><code>storage</code></td><td>To save your key, settings, verdict cache and Strict-mode counter locally.</td></tr>
 </tbody></table></div>
 <h2>Your rights</h2>
 <h3>Switzerland (FADP / DSG)</h3>
 <p>The revised Swiss Federal Act on Data Protection (FADP), in force since 1 September 2023, gives you a right of access to personal data held about you. The developer holds <strong>none</strong> — there is no server, no database and no account system, so there is nothing to disclose, correct or delete beyond the data sitting in your own browser profile, which you control and can erase by removing the add-on.</p>
-<p>For the data you send to Google under your own API key, Google is the responsible party. Exercise those rights through your Google account.</p>
+<p>For the data you send to Google under your own API key, your relationship is with Google, under Google&#x27;s terms. Exercise those rights with Google, through your Google account.</p>
 <h3>EU / EEA and UK (GDPR)</h3>
-<p>The same applies. The developer is not a controller or processor of your personal data, because none is received. Google acts as controller for the API requests your key authenticates.</p>
+<p>The same applies. The developer is not a controller or processor of your personal data, because none is received. For the API requests your key authenticates, Google acts as your processor on paid use and, under its terms, on all use in the EEA, Switzerland and the UK; on unpaid use elsewhere it also uses the data for its own purposes, as described above.</p>
 <h2>Changes</h2>
 <p>Material changes to this policy will be accompanied by a version bump and noted in the add-on&#x27;s release notes.</p>
 <h2>Contact</h2>

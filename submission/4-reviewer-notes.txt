@@ -47,7 +47,8 @@ self-control tool configured by the adult who owns the key.
 FREE-TIER DATA USE (disclosed, not hidden)
 Google's terms state that content submitted on an unpaid key is used to improve
 Google's products and may be read by human reviewers, whereas paid keys are not
-used for product improvement. Because the submitted content is the details
+used for product improvement; in the EEA, Switzerland and the UK the paid-use
+rules apply to unpaid keys too. Because the submitted content is the details
 (and, in Smart/Thorough mode, the link) of a video the user opened, this is disclosed in plain language in the listing, in
 the privacy policy, and on the settings page next to the key field, so the user
 can choose a paid key or rely on local-only channel/keyword rules instead.

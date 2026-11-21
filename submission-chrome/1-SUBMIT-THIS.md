@@ -1,132 +1,93 @@
-# Chrome Web Store launch checklist — Focus Filter for YouTube 1.0.0
+# Chrome Web Store update — Focus Filter for YouTube 1.4.0
 
-Everything in this folder is paste-ready. Work top to bottom.
+The extension is already **published and public** on the Chrome Web Store
+(item ID `bbgifkibgnommegopgnbbepfnbojbkpp`, live version 1.1.0). So this is an
+update of an existing item, not a new one. Chrome users jump straight from
+1.1.0 to 1.4.0; their settings migrate by themselves (schema 2 → 3).
 
 Dashboard: <https://chrome.google.com/webstore/devconsole>
 
-**Two blockers before you start.** Both are things Chrome requires that AMO did
-not, and neither can be fixed from inside this repo:
+## Step 1 — Upload the package (done on 21 Nov 2026)
 
-1. A **publicly reachable privacy policy URL** (step 5). Chrome will not accept
-   pasted text the way AMO did.
-2. **At least one screenshot** at 1280x800 or 640x400 (step 6).
-
----
-
-## Step 0 — Register
-
-One-off US$5 developer registration, paid once per account, not per extension.
-You will also verify a contact email before you can publish.
-
-## Step 1 — Upload the package
-
-Upload:
+On the item, **Package** → **Upload new package**:
 
 ```
-build/focus-filter-for-youtube-1.0.0-chrome.zip
+build/focus-filter-for-youtube-1.4.0-chrome.zip
 ```
 
-Deliberately **not** copied into this folder: `build.sh` regenerates it, and a
-stale duplicate sitting next to the checklist is exactly how the wrong build
-gets published. Rebuild first if in any doubt:
-
-```bash
-./build.sh chrome
-```
-
-Upload the **zip**, not the `build/chrome/` folder.
+The draft then shows version 1.4.0 next to the published one. Uploading alone
+publishes nothing: the draft only goes out after **Submit for review**.
 
 ## Step 2 — Store listing
 
 | Field | What to enter |
 | --- | --- |
-| Name | `Focus Filter for YouTube` |
-| Short description | paste `2-short-description.txt` (126 chars, limit 132) |
+| Name | comes from the manifest: `Focus Filter for YouTube` |
+| Short description | comes from the manifest; `2-short-description.txt` if asked |
 | Detailed description | paste `3-description.txt` |
-| Category | **Well-being** — alternate: **Workflow & Planning** |
+| Category | **Well-being** (alternative: **Workflow & Planning**) |
 | Language | English |
+| Store icon | `store-icon-128.png` |
+| Screenshots | `screenshot-1` to `screenshot-5` (Chrome takes at most 5) |
+| Official URL | leave empty (it needs a verified domain) |
+| Homepage URL | `https://github.com/ImarTheOne/focus-filter-for-youtube` |
+| Support URL | `https://github.com/ImarTheOne/focus-filter-for-youtube/issues` |
+| Mature content | No |
 
-Chrome's category list is not AMO's, so the `Privacy & Security` choice from the
-AMO listing does not map across. A focus/distraction tool sits most naturally
-under Well-being; pick Workflow & Planning instead if you would rather be
-shelved next to productivity tooling.
+The screenshots show the real settings page and the real blocking and pause
+screens, rendered by the extension's own code on the test harness
+(`tests/serve.js`), so no YouTube page and no logo appears in them:
 
-## Step 3 — Graphic assets
+1. Category rules
+2. A blocked video with "Watch anyway"
+3. Never show me this and content rules
+4. Strict mode
+5. The breathing pause with the verse of the day
+6. Blocked for good under the hard limit (spare; also fine for AMO)
+7. API key, 18+ confirmation and free-tier notice (spare)
 
-| Asset | Size | Status |
-| --- | --- | --- |
-| Store icon | 128x128 | ready: `icons/icon-128.png` |
-| Screenshots (1–5) | 1280x800 or 640x400 | **you must capture these** |
-| Small promo tile | 440x280 | optional |
-| Marquee promo tile | 1400x560 | optional |
+Promo tiles (440x280, 1400x560) are optional; skip them.
 
-The promo tiles only matter if you want a shot at editorial placement. Skip them
-for launch.
+## Step 3 — Privacy tab
 
-## Step 4 — Privacy tab
-
-This is the tab that decides how long review takes. Four things:
-
-1. **Single purpose** — paste `4-single-purpose.txt`
-2. **Permission justifications** — paste the matching block from
-   `5-permission-justifications.txt` into each box (`storage`, the two host
+1. **Single purpose**: paste `4-single-purpose.txt`
+2. **Permission justifications**: paste the matching block from
+   `5-permission-justifications.txt` into each box (`storage`, host
    permissions), and answer **No** to the remote-code question
-3. **Data usage** — tick the categories set out in `6-data-disclosures.txt`,
-   then accept all three certifications (all three are true here)
-4. **Privacy policy URL** — see step 5
+3. **Data usage**: tick what `6-data-disclosures.txt` says (Website content,
+   Web history, Authentication information), then accept all three
+   certifications
+4. **Privacy policy URL**:
+   `https://github.com/ImarTheOne/focus-filter-for-youtube/blob/main/PRIVACY.md`
+   Push the latest commit first: the "Limited Use" section that Chrome's User
+   Data Policy asks for is new in this release.
 
-## Step 5 — Privacy policy URL (blocker)
+## Step 4 — Distribution
 
-You have the text in `PRIVACY.md`, but Chrome needs it at a URL. Cheapest routes,
-in order of effort:
-
-- **Public GitHub repo**: push the project and link the rendered file, e.g.
-  `https://github.com/<you>/<repo>/blob/main/PRIVACY.md`
-- **GitHub Pages**: turn Pages on for the repo and link the built page
-- **Gist**: paste `PRIVACY.md` into a public gist and link that — works, though
-  it looks less official to a reviewer
-
-Whichever you pick, the URL must stay reachable for as long as the extension is
-listed. A dead privacy policy link is grounds for takedown.
-
-## Step 6 — Screenshots (blocker)
-
-Capture these yourself, in a real Chrome with a real API key:
-
-1. The settings page, Category rules section, a few set to Block
-2. A blocking screen over a video player, showing the category and reason
-3. The toolbar popup showing the counters
-
-Load the extension first: `chrome://extensions` → Developer mode → Load unpacked
-→ `build/chrome`. Automated capture is not worth attempting — signed-out YouTube
-serves a cookie consent wall that covers the player.
-
-## Step 7 — Distribution
-
-- **Visibility**: Public. (Unlisted also exists — reachable by direct link only,
-  and still fully reviewed. Private restricts it to trusted testers or a
-  Workspace domain.)
-- **Regions**: all, unless you have a reason to narrow it
+- **Visibility**: Public
+- **Regions**: all
 - **Pricing**: free
 
----
+## Step 5 — Test instructions
 
-## What will actually slow you down
+Under **Access** → **Test instructions**, paste `7-reviewer-notes.txt` from
+"WHAT IT DOES" down. Its "How to test without a key" part is the important one:
+a reviewer can see the extension work through the local title-word rule
+without a Gemini key.
 
-**The reviewer cannot test it without their own Gemini key.** The extension is
-inert until a key is pasted. `7-reviewer-notes.txt` says so explicitly and links
-the free key page. If review stalls with no explanation, this is the likeliest
-cause — reply with that text.
+## Step 6 — Submit for review
 
-**Broad host access on youtube.com invites a manual pass.** The justifications in
-`5-permission-justifications.txt` are written to answer that up front.
+**Submit for review** (top right on the item once the draft is complete).
+Leave "publish automatically after approval" on, unless you want to time it.
 
-**Chrome has no prominent reviewer-notes field** the way AMO does. Keep
-`7-reviewer-notes.txt` on hand for the reply if you get a rejection or a
-clarification request.
+Review usually takes one to a few days for an item with host permissions on
+youtube.com.
 
 ## After it goes live
 
-Bump `"version"` in **both** `manifest.json` and `manifest.chrome.json` before
-every future upload. The two stores reject a version they have already accepted,
-and they track it independently — `build.sh` warns when the numbers drift apart.
+- Make sure the README links the Chrome Web Store listing next to the AMO link.
+- Bump `"version"` in **both** `manifest.json` and `manifest.chrome.json`
+  before every future upload. Both stores reject a version they already
+  accepted; `build.sh` warns when the two drift apart.
+- Your own Chrome can switch from the unpacked `build/chrome` to the store
+  version, so it updates by itself.

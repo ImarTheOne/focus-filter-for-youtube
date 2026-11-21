@@ -17,7 +17,7 @@ that is a relationship directly between you and Google, under Google's terms.
 
 You must be 18 or older
 
-Google's Gemini API terms (https://ai.google.dev/gemini-api/terms) require every
+Google's Gemini API terms (https://aistudio.google.com/docs/terms) require every
 API user to be 18 years of age or older, and prohibit using the API as part of
 a service directed towards, or likely to be accessed by, individuals under 18.
 
@@ -63,27 +63,40 @@ These are the only network requests the add-on makes. There is no analytics, no
 telemetry, no error reporting and no server operated by the developer. Your data
 is never sent to the developer, because there is nowhere for it to be sent.
 
-Important: what Google does with it on a free key
+Important: what Google does with it
 
-Google's terms distinguish sharply between unpaid and paid use:
+Google's terms (version effective 23 March 2026) distinguish between unpaid and
+paid use, and treat Europe differently:
 
-- Unpaid (free) API keys — Google states that it uses the content you submit
-  to "provide, improve, and develop Google products", and that human reviewers
-  may read, annotate and process your API input and output.
-- Paid API keys — Google states that it does not use your prompts or the
-  responses to improve its products, and logs data only to detect abuse.
+- Paid use (a key from a Google Cloud project with billing turned on) —
+  Google states that it does not use your prompts or the responses to
+  improve its products. It processes them under its Data Processing Addendum,
+  as a processor, and logs them for a limited period solely to detect and
+  prevent abuse.
+- Unpaid (free) use, if you are in the EEA, Switzerland or the United
+  Kingdom — Google states that the paid-use rules above apply to you too,
+  even though the key is free.
+- Unpaid (free) use everywhere else — Google states that it uses the
+  content you submit and the responses to "provide, improve, and develop"
+  its products, and that human reviewers may read, annotate, and process
+  your input and output. Google says it disconnects the data from your Google
+  Account, API key and Cloud project before reviewers see it.
 
 What is submitted is the details of a video you chose to open, and in Smart or
 Thorough mode possibly its link, plus your goals and your rules. With feed
 filtering on, it is also the titles and channels of the videos on the pages you
-picked. On a free key
-you should assume that information is retained by Google and may be read by a
-person. If that matters to you, use a paid key, or restrict the add-on
-to the channel and title-word lists, which never leave your browser.
+picked. On a free key outside the EEA, Switzerland and the UK you should assume
+that this information is kept by Google and may be read by a person. If that
+matters to you, use a paid key, or restrict the add-on to the channel and
+title-word lists, which never leave your browser.
+
+Google states that it may store the data transiently or cache it in any
+country where Google or its agents have facilities, so it can be processed
+outside Switzerland and the EEA.
 
 The developer has no influence over any of this and no visibility into it.
-Google's handling is governed solely by Google's own terms:
-<https://ai.google.dev/gemini-api/terms>
+Google's handling is governed solely by Google's own terms, which you accept
+with Google when you create your key: <https://aistudio.google.com/docs/terms>
 
 What is never sent
 
@@ -92,7 +105,8 @@ What is never sent
   the moment you open it, and with feed filtering on the tiles of the pages
   you picked, as described above
 - Your Google, YouTube or any other account details
-- Cookies, watch history, or anything identifying you
+- Cookies, watch history, or anything identifying you — apart from your API
+  key itself, which tells Google whose request it is
 - The video itself — the add-on never downloads, captures or uploads video or
   audio. (In Smart or Thorough mode Google fetches a public video from YouTube
   by its link; see above.)
@@ -121,6 +135,10 @@ storage API. Only your API key ever leaves the browser, and only to Google:
   days by default and capped at 5,000 entries
 - In Strict mode with a daily limit, how many times you used "Watch anyway"
   today: a count and the date, nothing about which videos
+- In Strict mode, a change that makes it less strict while it waits for the
+  delay you chose, with the time it applies
+- Counters shown in the toolbar popup (videos allowed, blocked and watched, API
+  calls, errors) and the last error message from Google's API with its time
 
 Removing the add-on deletes all of it. You can clear the cache at any time from
 the settings page.
@@ -140,13 +158,34 @@ Nothing else is declared, and nothing else is collected: no personally
 identifiable information, no health or financial data, no personal
 communications, no location, and no user-activity tracking of any kind.
 
+How this maps to Firefox's data collection permissions
+
+Firefox shows the data an add-on transmits when you install it. This add-on
+declares two kinds, both required for it to work:
+
+Declared | What it actually is |
+--- | --- |
+Website content | The details of a video you open (and, with feed filtering on, of the video tiles on the pages you picked), as described above. |
+Browsing activity | The link of a video you open, sent in Smart or Thorough mode so Google can watch it. No list of visited pages is built, stored or transmitted. |
+
+Limited Use
+
+The use of information received through this extension adheres to the
+Chrome Web Store User Data Policy (https://developer.chrome.com/docs/webstore/program-policies/),
+including its Limited Use requirements. The data described above is used for
+one purpose only: judging the videos you open against your own rules. It is not
+sold, not used for advertising, not used to determine creditworthiness, and not
+transferred to anyone except Google's Gemini API, which performs that judging
+under your own key. The developer receives none of it, so no one on the
+developer's side can read it.
+
 Permissions and why they are needed
 
 Permission | Why |
 --- | --- |
 *://*.youtube.com/* | To read the details of a video you open and to block or redirect it. |
 https://generativelanguage.googleapis.com/* | To send those details, and optionally the video's link, to Google's Gemini API for judging. |
-storage | To save your key, settings and verdict cache locally. |
+storage | To save your key, settings, verdict cache and Strict-mode counter locally. |
 
 Your rights
 
@@ -159,14 +198,17 @@ system, so there is nothing to disclose, correct or delete beyond the data
 sitting in your own browser profile, which you control and can erase by removing
 the add-on.
 
-For the data you send to Google under your own API key, Google is the
-responsible party. Exercise those rights through your Google account.
+For the data you send to Google under your own API key, your relationship is
+with Google, under Google's terms. Exercise those rights with Google, through
+your Google account.
 
 EU / EEA and UK (GDPR)
 
 The same applies. The developer is not a controller or processor of your personal
-data, because none is received. Google acts as controller for the API requests
-your key authenticates.
+data, because none is received. For the API requests your key authenticates,
+Google acts as your processor on paid use and, under its terms, on all use in
+the EEA, Switzerland and the UK; on unpaid use elsewhere it also uses the data
+for its own purposes, as described above.
 
 Changes
 

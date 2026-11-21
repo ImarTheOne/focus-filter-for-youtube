@@ -6,7 +6,9 @@ TICK: Website content
 ================================================================
 Definitely yes. The content script reads the video's title, channel name,
 description, tags, YouTube category and length out of the YouTube page, and
-those are transmitted to Google's Gemini API.
+those are transmitted to Google's Gemini API. With the optional feed filtering
+(or Strict mode's "remove those videos from the home page"), the title,
+channel, length and views line of video tiles are sent too.
 This is the same thing already declared to Firefox as the "websiteContent" data
 collection permission in manifest.json.
 
@@ -20,6 +22,7 @@ The extension transmits the page title of each YouTube video the user opens, and
 in the Smart (default) and Thorough modes the video's URL.
 That is named explicitly in the definition, so this is not a borderline call -
 tick it.
+Firefox gets the same declaration as "browsingActivity" in manifest.json.
 
 ================================================================
 DO NOT TICK: Personally identifiable information
@@ -75,7 +78,11 @@ THE THREE CERTIFICATIONS - all three can be truthfully accepted
    -> True. Nothing of the sort.
 
 ================================================================
-PRIVACY POLICY URL - required, and you do not have one yet
+PRIVACY POLICY URL
 ================================================================
-Chrome will not let you publish without a publicly reachable URL. Unlike AMO, it
-will not accept pasted text. See step 5 of 1-SUBMIT-THIS.md.
+https://github.com/ImarTheOne/focus-filter-for-youtube/blob/main/PRIVACY.md
+
+The repository is public, so this URL works without any further setup. It
+contains the Limited Use statement Chrome's User Data Policy asks for (section
+"Limited Use"). It must stay reachable for as long as the extension is listed:
+do not rename, privatise or delete the repository.

@@ -8,3 +8,10 @@ releases playback, the background service worker has Gemini judge the video -
 from those details, or, if the user opts in, by having Gemini watch the video
 from its public link - and caches the verdict, and the options page is
 where the user writes the rules that decide the outcome.
+
+The optional features apply the same decision earlier or more firmly: feed
+filtering (off by default) judges video tiles before they are clicked, the
+optional pause holds a video for a few seconds before it plays, and the
+optional Strict mode limits how the user can get around a block (a hard score
+limit, a daily number of "Watch anyway", a delay before the settings get less
+strict).

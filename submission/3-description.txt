@@ -66,11 +66,13 @@ Your browsing history, account details and watch history are never touched, and
 the add-on never downloads or uploads video or audio. Channel and keyword rules are
 matched inside your browser and never leave it.
 
-One thing you should know before choosing a key: on Google's FREE tier, Google
-states that submitted content is used to improve Google's products and that
-human reviewers may read it. What is submitted is the details, and possibly the
-link, of a video you opened. On a PAID key Google states it does not use prompts to improve
-its products. The full detail is in the privacy policy.
+One thing you should know before choosing a key: on Google's FREE tier outside
+the EEA, Switzerland and the UK, Google states that submitted content is used to
+improve Google's products and that human reviewers may read it. What is
+submitted is the details, and possibly the link, of a video you opened. On a
+PAID key, and on any key in the EEA, Switzerland and the UK, Google states it
+does not use prompts to improve its products. The full detail is in the privacy
+policy.
 
 WHAT THIS IS NOT
 

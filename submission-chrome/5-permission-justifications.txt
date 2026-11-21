@@ -5,10 +5,13 @@ the matching box on the Privacy tab.
 storage
 ================================================================
 Stores the user's own settings locally: their Gemini API key, their category
-rules, their written goals and content rules, and a cache of verdicts already returned by the
-model. The cache is what keeps the extension cheap - a video that has been
-judged once is never sent again. Nothing in storage is transmitted anywhere;
-there is no developer-operated server.
+rules, their written goals and content rules, a cache of verdicts already
+returned by the model, and - only in the optional Strict mode - a count of how
+often "Watch anyway" was used today and a settings change waiting for the
+user's chosen delay. The cache is what keeps the extension cheap - a video that
+has been judged once is never sent again. Nothing in storage is transmitted
+anywhere except the API key, which goes only to Google to authenticate the
+user's own request; there is no developer-operated server.
 
 ================================================================
 Host permission: *://*.youtube.com/*
@@ -20,7 +23,8 @@ through a small read-only main-world script that asks the player for this video
 ID's data), pauses the player while the video is judged, and then
 either releases playback or covers the player with a blocking screen. Optional
 feed filtering, off by default, uses the same access to hide tiles before they
-are clicked. No other site is matched.
+are clicked. When the user saves new settings, each YouTube tab reloads itself
+so a video already open is checked against them. No other site is matched.
 
 ================================================================
 Host permission: https://generativelanguage.googleapis.com/*
@@ -29,9 +33,10 @@ This is the Google Gemini API endpoint that judges a video. It is the only host
 the extension ever sends a request to. The request carries the video's details
 (title, channel, description, tags, YouTube category, length) and - in the Smart
 (default) and Thorough modes - the video's public YouTube link, which Google's
-own servers fetch to process the video. It is authenticated with the user's own Google AI
-Studio key in the x-goog-api-key header. There is no other network destination:
-no analytics, no telemetry, no error reporting, no developer backend.
+own servers fetch to process the video. It is authenticated with the user's own
+Google AI Studio key in the x-goog-api-key header. There is no other network
+destination: no analytics, no telemetry, no error reporting, no developer
+backend.
 
 ================================================================
 Remote code

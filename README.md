@@ -432,6 +432,18 @@ Windows Phone app — targeted ad stripping, downloading or alternative clients.
   developer is not a controller: there is no server and no data is ever received.
   The one outbound request goes from the user's browser to Google under the
   user's own key. The same reasoning covers GDPR for EU/UK users.
+- **Gemini API terms, version of 23 March 2026 — open points.** Two new
+  sentences matter for a bring-your-own-key add-on. First, the API "is for
+  developers building with Google AI models for professional or business
+  purposes, not for consumer use". Second, only Paid Services may be used "when
+  making API Clients available to users" in the EEA, Switzerland or the UK.
+  Each user signs up with Google and uses their own key, so the user, not the
+  developer, is Google's API customer; how Google reads these clauses for such a
+  tool is not settled. Reassess before marketing the add-on more widely, and
+  never offer a shared or bundled key. The same version applies the paid-use
+  data rules to free keys in the EEA, Switzerland and the UK; `PRIVACY.md`
+  reflects that, while the settings page still warns about the free tier for
+  everyone, which errs on the safe side.
 
 ### Obligations that are actually binding, and how they are met
 
@@ -500,8 +512,10 @@ Everything paste-ready lives in **`submission-chrome/`** — work through
    - **remote code: none.** Everything executed ships in the package.
 5. Declare the data use honestly: video details (title, channel, description,
    tags) and, optionally, the video's link leave the browser for Google's
-   Gemini API. Link `PRIVACY.md` as the privacy policy —
-   it is required, for exactly that reason.
+   Gemini API. Link `PRIVACY.md` as the privacy policy
+   (<https://github.com/ImarTheOne/focus-filter-for-youtube/blob/main/PRIVACY.md>) —
+   it is required, for exactly that reason, and its "Limited Use" section is
+   the statement Chrome's User Data Policy asks for.
 
 Review is usually faster than AMO's, but an extension asking for host permissions
 on youtube.com can be pulled aside for a manual pass. The reviewer notes in
