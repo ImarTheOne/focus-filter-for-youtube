@@ -18,8 +18,9 @@ const DEFAULT_GOALS = [
 
 /* Bumped when a default changes in a way that must override what is already
    saved. v2: feed filtering became opt-in — videos are judged when you open
-   them, so the home page must be left alone even for existing installs. */
-const SCHEMA_VERSION = 2;
+   them, so the home page must be left alone even for existing installs.
+   v3: Insane mode and the hard limit moved under Strict mode. */
+const SCHEMA_VERSION = 3;
 
 const DEFAULTS = {
   schemaVersion: SCHEMA_VERSION,
@@ -33,6 +34,27 @@ const DEFAULTS = {
   knownModels: [], // filled in from the API, see pickBestModel
   threshold: 50,
   goals: DEFAULT_GOALS,
+
+  /* Strict mode: the settings that take a way out away. Off, they are kept
+     but do nothing (see applyStrict), so the defaults below only apply once
+     you switch it on. */
+  strict: false,
+
+  /* A second, lower line on the same score. Under it a video is blocked with
+     no "Watch anyway"; between it and the threshold it is blocked but you may
+     still choose to watch. 0 = off. hardHome also removes those videos from
+     the YouTube home page, which means judging the home page as it loads. */
+  hardThreshold: 25,
+  hardHome: true,
+
+  /* How often a day "Watch anyway" works, counted from your local midnight.
+     -1 = as often as you like, 0 = never. */
+  anywayPerDay: 3,
+
+  /* While Strict mode is on, a change that loosens it waits this many hours
+     in strictPending ({ at, changes }) before it applies. See holdBack. */
+  strictDelayHours: 24,
+  strictPending: null,
   blockMode: "hide", // "hide" | "placeholder"
 
   /* The main mode: judge a video when you open it, not while you browse. */
@@ -46,10 +68,11 @@ const DEFAULTS = {
   breatheSeconds: 25,
   verse: false,
 
-  /* Insane mode: Gemini watches every video before it plays, behind the
-     breathing screen, for as long as that takes. No skip, no "Watch anyway",
-     no always-allow channels, and a video that cannot be checked stays
-     blocked. A blocked video only offers the way back to the YouTube home. */
+  /* Insane mode, the strictest part of Strict mode: Gemini watches every
+     video before it plays, behind the breathing screen, for as long as that
+     takes. No skip, no "Watch anyway", no always-allow channels, and a video
+     that cannot be checked stays blocked. A blocked video only offers the
+     way back to the YouTube home. */
   insane: false,
 
   /* Feed filtering is off by default now — the home page loads untouched.
@@ -212,16 +235,115 @@ function migrate(stored) {
     s.enforceWatch = true;
     s.schemaVersion = 2;
   }
+  if (s.schemaVersion < 3) {
+    // Whoever already used Insane mode or the hard limit keeps it, inside
+    // Strict mode, and nothing they did not choose switches on with it.
+    s.strict = Boolean(s.insane || s.hardThreshold > 0);
+    if (s.strict) {
+      s.hardThreshold ??= 0;
+      s.anywayPerDay ??= -1;
+      s.strictDelayHours ??= 0;
+    }
+    s.schemaVersion = 3;
+  }
   return s;
+}
+
+/* Strict mode off: its settings stay saved but do nothing. Applied to what
+   the extension acts on, never to what is saved, so switching Strict mode on
+   again brings them back as they were. */
+function applyStrict(settings) {
+  return settings.strict ? settings : { ...settings, insane: false, hardThreshold: 0, anywayPerDay: -1 };
 }
 
 function anySurfaceEnabled(settings) {
   return Object.values(settings.surfaces || {}).some(Boolean);
 }
 
-async function getSettings() {
+/* The hard limit stands on its own: lowering the threshold does not lower
+   it, so it cannot be got round without the Strict mode delay. */
+function hardLimit(settings) {
+  return Number(settings.hardThreshold) || 0;
+}
+
+/* What Strict mode guards while it is on — itself, and the switches that turn
+   checking off — and when a change to each counts as loosening it. */
+const GUARDED = {
+  strict: (from, to) => from && !to,
+  insane: (from, to) => from && !to,
+  hardHome: (from, to) => from && !to,
+  enabled: (from, to) => from && !to,
+  enforceWatch: (from, to) => from && !to,
+  hardThreshold: (from, to) => to < from,
+  strictDelayHours: (from, to) => to < from,
+  anywayPerDay: (from, to) => from >= 0 && (to < 0 || to > from),
+  apiKey: (from, to) => Boolean(from) && to !== from
+};
+
+/* With Strict mode on, a change that loosens a guarded setting is not saved
+   yet: it waits in strictPending, and every new one restarts the clock.
+   Tightening applies at once, and drops a waiting change to the same setting. */
+function holdBack(current, next) {
+  if (!current.strict) return next;
+  // What already waits; a patch with strictPending: null cancels it.
+  const changes = { ...(next.strictPending?.changes || {}) };
+  let held = false;
+  for (const [key, loosens] of Object.entries(GUARDED)) {
+    if (next[key] === current[key]) continue;
+    if (loosens(current[key], next[key])) {
+      changes[key] = next[key];
+      next[key] = current[key];
+      held = true;
+    } else {
+      delete changes[key];
+    }
+  }
+  const at = held ? Date.now() + current.strictDelayHours * 3600000 : current.strictPending?.at;
+  if (held && current.strictDelayHours <= 0) return { ...next, ...changes, strictPending: null };
+  return { ...next, strictPending: Object.keys(changes).length ? { at, changes } : null };
+}
+
+/* A waiting change in words, for the settings page and the popup. */
+function describeChanges(changes) {
+  const say = {
+    strict: () => "Strict mode off",
+    insane: () => "Insane mode off",
+    hardHome: () => "hard-blocked videos back on the home page",
+    enabled: () => "filtering off",
+    enforceWatch: () => "videos no longer checked when opened",
+    hardThreshold: (v) => (v ? `hard limit ${v}` : "hard limit off"),
+    anywayPerDay: (v) => (v < 0 ? "\"Watch anyway\" without a limit" : `"Watch anyway" ${v} times a day`),
+    strictDelayHours: (v) => `delay ${formatDelay(v)}`,
+    apiKey: (v) => (v ? "a different API key" : "API key removed")
+  };
+  return Object.entries(changes).map(([key, value]) => say[key]?.(value) || key).join(", ");
+}
+
+function formatDelay(hours) {
+  if (!hours) return "none";
+  if (hours % 24) return `${hours} hour${hours === 1 ? "" : "s"}`;
+  return hours === 168 ? "1 week" : `${hours / 24} day${hours === 24 ? "" : "s"}`;
+}
+
+function formatWhen(at) {
+  return new Date(at).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+/* Whether any feed gets judged: a surface you switched on, or the home page
+   when videos under the hard limit are to vanish from it. */
+function filtersFeed(settings) {
+  return anySurfaceEnabled(settings) || (settings.hardHome && hardLimit(settings) > 0);
+}
+
+/* The settings as saved. Only the settings page and saving need these. */
+async function getStoredSettings() {
   const stored = await ext.storage.local.get("settings");
-  const s = migrate(stored.settings || {});
+  // Nothing saved yet is a fresh install: the defaults, nothing to migrate.
+  let s = stored.settings ? migrate(stored.settings) : {};
+  // A waiting Strict mode change whose time has come counts as saved.
+  if (s.strictPending && Date.now() >= s.strictPending.at) {
+    s = { ...s, ...s.strictPending.changes, strictPending: null };
+  }
   return {
     ...DEFAULTS,
     ...s,
@@ -229,9 +351,14 @@ async function getSettings() {
   };
 }
 
+/* The settings the extension acts on. */
+async function getSettings() {
+  return applyStrict(await getStoredSettings());
+}
+
 async function saveSettings(patch) {
-  const current = await getSettings();
-  const next = { ...current, ...patch };
+  const current = await getStoredSettings();
+  const next = holdBack(current, { ...current, ...patch });
   await ext.storage.local.set({ settings: next });
   return next;
 }

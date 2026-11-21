@@ -8,10 +8,11 @@ function notice(kind, text) {
 }
 
 async function render() {
-  const [settings, stats, stored] = await Promise.all([
+  const [settings, stats, stored, budget] = await Promise.all([
     getSettings(),
     getStats(),
-    ext.storage.local.get("lastError")
+    ext.storage.local.get("lastError"),
+    ext.runtime.sendMessage({ type: "anyway" }).catch(() => null)
   ]);
 
   $("#enabled").checked = settings.enabled;
@@ -27,8 +28,12 @@ async function render() {
   } catch {
     where = "sending you to your redirect address";
   }
-  const feed = anySurfaceEnabled(settings) ? " Feed filtering is on." : "";
+  const limit = hardLimit(settings);
+  const hard = limit > 0 ? ` (under ${limit} with no "Watch anyway")` : "";
+  const feed = anySurfaceEnabled(settings) ? " Feed filtering is on."
+    : filtersFeed(settings) ? " Videos under the hard limit are removed from the home page." : "";
   const breath = settings.breathe ? ` A ${settings.breatheSeconds}-second pause before every video.` : "";
+  const anyway = Number.isInteger(budget?.left) ? ` "Watch anyway" left today: ${budget.left} of ${budget.limit}.` : "";
 
   const how = settings.insane ? "by watching every one, no skipping (Insane mode)," : {
     standard: "from their details",
@@ -40,7 +45,7 @@ async function render() {
 
   $("#thresholdLine").textContent =
     `Checking videos ${how} when you open them, and ${where}. ` +
-    `${blockedCats} categories blocked outright, the rest judged under ${settings.threshold}/100.${rules}${feed}${breath}`;
+    `${blockedCats} categories blocked outright, the rest judged under ${settings.threshold}/100${hard}.${rules}${feed}${breath}${anyway}`;
 
   $("#notice").textContent = "";
   if (!settings.apiKey) {

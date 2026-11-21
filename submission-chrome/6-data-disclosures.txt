@@ -1,0 +1,81 @@
+The Privacy tab makes you tick data categories, then certify three statements.
+Here is what is true for this extension, and where you have to make a call.
+
+================================================================
+TICK: Website content
+================================================================
+Definitely yes. The content script reads the video's title, channel name,
+description, tags, YouTube category and length out of the YouTube page, and
+those are transmitted to Google's Gemini API.
+This is the same thing already declared to Firefox as the "websiteContent" data
+collection permission in manifest.json.
+
+================================================================
+TICK: Web history
+================================================================
+Settled by Chrome's own wording on the form: "The list of web pages a user has
+visited, as well as ASSOCIATED DATA SUCH AS PAGE TITLE and time of visit."
+
+The extension transmits the page title of each YouTube video the user opens, and
+in the Smart (default) and Thorough modes the video's URL.
+That is named explicitly in the definition, so this is not a borderline call -
+tick it.
+
+================================================================
+DO NOT TICK: Personally identifiable information
+================================================================
+No name, address, email, age or identifier is ever read or sent. The extension
+never touches the user's Google or YouTube account.
+
+================================================================
+TICK: Authentication information
+================================================================
+Revised after reading Chrome's wording on the form: "For example: passwords,
+CREDENTIALS, security question, or personal identification number (PIN)."
+
+An API key is a credential. The user types it into the extension, it is stored
+in extension storage, and it is transmitted - to Google, as the x-goog-api-key
+header. The question asks what you collect FROM USERS, and you do collect this
+from the user.
+
+An earlier draft of this file said not to tick it, on the grounds that the key
+never reaches the developer. That reasoning is about who RECEIVES the data, which
+is not what the question asks. Under-declaring is the failure mode that gets
+listings pulled, so tick it.
+
+Then use the reviewer notes to remove any ambiguity: the key is the user's own
+credential, stored locally, sent only to Google to authenticate the user's own
+request, and never transmitted to the developer - there is no developer server
+that could receive it.
+
+================================================================
+DO NOT TICK
+================================================================
+Health information; Financial and payment information; Personal communications
+(no emails, texts or chat messages are read); Location (no region, GPS or IP
+address is collected - Google's servers see an IP inherently, as every web
+request does, but the extension neither reads nor stores it); User activity (no
+clicks, keystrokes, mouse position, scroll or network monitoring).
+
+================================================================
+THE THREE CERTIFICATIONS - all three can be truthfully accepted
+================================================================
+1. "I do not sell or transfer user data to third parties, outside of the
+   approved use cases."
+   -> True. Video details go to Google's Gemini API solely to perform the extension's
+      single purpose, using the user's own key. Nothing is sold, and there is no
+      developer server that receives anything.
+
+2. "I do not use or transfer user data for purposes that are unrelated to my
+   item's single purpose."
+   -> True. Judging the opened video IS the single purpose.
+
+3. "I do not use or transfer user data to determine creditworthiness or for
+   lending purposes."
+   -> True. Nothing of the sort.
+
+================================================================
+PRIVACY POLICY URL - required, and you do not have one yet
+================================================================
+Chrome will not let you publish without a publicly reachable URL. Unlike AMO, it
+will not accept pasted text. See step 5 of 1-SUBMIT-THIS.md.

@@ -149,6 +149,7 @@
   <section class="card">
     <h2>Strictness</h2>
     <p class="hint" id="thresholdScope"></p>
+    <label class="slider-label" for="threshold">Block videos scoring under</label>
     <div class="slider-row">
       <input type="range" id="threshold" min="0" max="100" step="5">
       <output id="thresholdOut"></output>
@@ -196,15 +197,64 @@
   </section>
 
   <section class="card">
-    <h2>Insane mode</h2>
-    <label class="check"><input type="checkbox" id="insane"> Check every video before it plays, with no way around it</label>
-    <p class="hint">Gemini watches every video and Short you open, whatever you
-      picked under <em>How closely to check</em>, and your always-allowed channels
-      are checked too. Until the check is done the video stays paused behind the
-      breathing circle, however long that takes, and there is no skip and no
-      "Watch anyway". A video that cannot be checked stays blocked. A blocked
-      video offers a button straight back to the YouTube home page. Needs an
-      API key, and a free key only covers about 8 hours of watched video a day.</p>
+    <h2>Strict mode <em>(optional)</em></h2>
+    <label class="check"><input type="checkbox" id="strict"> Turn on Strict mode</label>
+    <p class="hint">For when the filter is too easy to get around. Everything in
+      here takes a way out away, from a little to completely: set it as strict as
+      you want. Switched off, these settings are kept but do nothing.</p>
+    <div id="strictPending" class="pending" hidden>
+      <span id="strictPendingText"></span>
+      <button type="button" id="cancelPending" class="ghost">Cancel, stay strict</button>
+    </div>
+    <div id="strictOptions">
+      <div class="field inline" style="margin-top: 10px;">
+        <span>Making it less strict takes effect after</span>
+        <select id="strictDelayHours">
+          <option value="0">no delay</option>
+          <option value="1">1 hour</option>
+          <option value="24">1 day</option>
+          <option value="72">3 days</option>
+          <option value="168">1 week</option>
+        </select>
+      </div>
+      <p class="hint">Once saved, anything that loosens Strict mode waits this long:
+        switching Strict mode or filtering off, a lower hard limit, more "Watch
+        anyway", Insane mode or the home page option off, a shorter delay, and a
+        different API key. A new change restarts the wait. Making it stricter
+        works at once, and a waiting change can be cancelled.</p>
+      <hr>
+      <label class="slider-label" for="hardThreshold">Hard limit — under this score, no "Watch anyway"</label>
+      <div class="slider-row">
+        <input type="range" id="hardThreshold" min="0" max="100" step="5">
+        <output id="hardThresholdOut"></output>
+      </div>
+      <div class="slider-row" aria-hidden="true"><div id="zones" class="zones"></div><output></output></div>
+      <p class="hint" id="hardThresholdHint"></p>
+      <label class="check"><input type="checkbox" id="hardHome"> Also remove those videos from the YouTube home page</label>
+      <p class="hint">The home page is then judged as it loads, from each video's
+        title and channel, and only the videos under the hard limit disappear;
+        everything else stays. This sends the title, channel, length and view
+        count of every video on your home page to Google, and costs one API call
+        per 15 videos.</p>
+      <hr>
+      <div class="field inline">
+        <label class="check"><input type="checkbox" id="anywayLimit"> Allow "Watch anyway" only</label>
+        <input type="number" id="anywayPerDay" min="0" max="99" step="1" aria-label="Times a day">
+        <span id="anywayUnit">times a day</span>
+      </div>
+      <p class="hint">Counted across all your tabs and reset at midnight; 0 means
+        never. Once they are used up, a blocked video only offers the way back,
+        as it does under the hard limit.</p>
+      <hr>
+      <label class="check"><input type="checkbox" id="insane"> Insane mode: check every video before it plays, with no way around it</label>
+      <p class="hint">Gemini watches every video and Short you open, whatever you
+        picked under <em>How closely to check</em>, and your always-allowed channels
+        are checked too. Until the check is done the video stays paused behind the
+        breathing circle, however long that takes, and there is no skip and no
+        "Watch anyway". A video that cannot be checked stays blocked. A blocked
+        video offers a button straight back to the YouTube home page. Needs an
+        API key, and a free key only covers about 8 hours of watched video a day.</p>
+    </div>
   </section>
 
   <section class="card">

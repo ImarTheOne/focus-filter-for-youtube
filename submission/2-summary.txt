@@ -1,0 +1,1 @@
+Your YouTube feed loads normally. The moment you open a video, it is sorted into a category and checked against your rules. Block whole categories like gaming or drama, or let a productivity score decide. Uses your own Google Gemini API key.

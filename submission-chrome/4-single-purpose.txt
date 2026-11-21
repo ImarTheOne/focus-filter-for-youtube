@@ -1,0 +1,10 @@
+Focus Filter for YouTube has one purpose: to decide whether a YouTube video the
+user opens should be watched, according to rules the user configured, and to
+block it if not.
+
+Everything in the extension serves that: the content script reads the details
+of the video being opened (title, channel, description, tags) and blocks or
+releases playback, the background service worker has Gemini judge the video -
+from those details, or, if the user opts in, by having Gemini watch the video
+from its public link - and caches the verdict, and the options page is
+where the user writes the rules that decide the outcome.

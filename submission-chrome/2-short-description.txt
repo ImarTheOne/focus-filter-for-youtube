@@ -1,0 +1,1 @@
+Your feed loads normally. Open a video and it is judged against your rules: block whole categories, or let an AI score decide.

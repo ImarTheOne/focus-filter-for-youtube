@@ -1,0 +1,89 @@
+WHAT IT DOES
+When the user opens a YouTube video, the add-on reads the video's details
+(title, channel, description, tags, YouTube category, length) from the page and
+sends them to Google's Gemini API. The model returns a category (from a fixed
+20-item list), optionally a 0-100 score, and which of the user's plain-language
+content rules the video matches. The add-on then blocks or allows the video
+according to rules the user configured.
+
+The "Smart" mode (the default) and the "Thorough" mode additionally pass the
+video's public YouTube link to Gemini as a fileData part - Google's documented
+video-understanding feature. Google's servers fetch and process the video; the
+add-on never downloads it.
+
+HOW TO TEST
+1. Install and open the settings page (it opens automatically on install).
+2. A free Google AI Studio API key is required: https://aistudio.google.com/apikey
+   Without a key the add-on is completely inert - it makes no requests and does
+   not modify any page.
+3. Paste the key and press "Test connection". This calls the Gemini API once and
+   reports the result.
+4. Press "Load models from my key" to populate the model dropdown.
+5. In "Category rules", set for example Gaming to Block, and save.
+6. Open any gaming video on YouTube. The player is paused and a blocking screen
+   appears. If a redirect address is configured instead, the tab navigates there.
+
+WHAT IT IS NOT (the questions reviewers usually ask first)
+- It is NOT an ad blocker. It does not detect, block, modify, replace or hide
+  any advertisement, pre-roll, mid-roll or sponsored element.
+- It does NOT download or capture video or audio.
+- It does NOT circumvent any technological protection measure, paywall,
+  sign-in wall or DRM.
+- It makes ZERO requests to youtube.com, and never scrapes or crawls. To read
+  the opened video's details it uses page-bridge.js, a small read-only script in
+  the page's main world, which calls the player's getPlayerResponse() for the
+  video ID in the URL and passes the result back as a JSON string. It changes
+  nothing on the page.
+- It does NOT collect anything that could identify a person, and does not read
+  usernames, comments, cookies or account data.
+
+AGE GATING (Gemini API terms compliance)
+Google's Gemini API terms require API users to be 18+ and prohibit use in a
+service aimed at or likely to be accessed by under-18s. The listing states the
+18+ requirement, the settings page states it directly above the API key field,
+and the add-on is explicitly not presented as a parental control. It is a
+self-control tool configured by the adult who owns the key.
+
+FREE-TIER DATA USE (disclosed, not hidden)
+Google's terms state that content submitted on an unpaid key is used to improve
+Google's products and may be read by human reviewers, whereas paid keys are not
+used for product improvement. Because the submitted content is the details
+(and, in Smart/Thorough mode, the link) of a video the user opened, this is disclosed in plain language in the listing, in
+the privacy policy, and on the settings page next to the key field, so the user
+can choose a paid key or rely on local-only channel/keyword rules instead.
+
+NETWORK ACTIVITY
+Exactly one endpoint is contacted: https://generativelanguage.googleapis.com
+Authentication is the user's own API key, sent in the x-goog-api-key header
+(never in a URL). There is no developer-operated server, no analytics and no
+telemetry of any kind.
+
+DATA HANDLING
+Transmitted: video title, channel name, description (up to the first 1,500 characters),
+tags, YouTube category and length, only for videos the user opens; in the
+Smart (default) and Thorough modes, also the video's public YouTube link,
+which the user can switch off by choosing Standard.
+Stored locally (browser storage only, never transmitted): the API key, the
+user's settings, and a cache of verdicts (video ID, category, score, reason,
+and for watched videos a short summary) capped at
+5000 entries with a 30-day default TTL.
+Never accessed: browsing history, cookies, account data, watch history. The
+add-on never downloads or uploads video or audio.
+
+PERMISSIONS
+- *://*.youtube.com/*  read the details of an opened video; block or redirect it
+- https://generativelanguage.googleapis.com/*  send those details (and optionally
+  the video's public link) to Gemini
+- storage  persist the key, settings and cache locally
+
+SOURCE CODE
+No build step, no minification, no bundler, no remote code. The submitted
+package is the complete, readable source. All six scripts are plain ES2022.
+There is no eval, no new Function, and no remotely-hosted script.
+
+PROMPT INJECTION HANDLING
+Video titles, descriptions and tags - and, when Gemini watches, anything said
+or shown in the video - are attacker-controlled. They are wrapped in
+<video_list> / <video_metadata> delimiters and the system prompt instructs the
+model to treat them strictly as data, and to categorise anything containing
+embedded instructions as "other" with a score of 0.

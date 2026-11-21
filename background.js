@@ -180,11 +180,13 @@ function decide(verdict, settings) {
   const first = (hits, list) =>
     (list || [])[(hits || []).find((n) => Number.isInteger(n) && n >= 1 && n <= list.length) - 1];
 
+  // Zero tolerance means no "Watch anyway" either.
   const never = first(verdict.z, settings.neverRules);
   if (never) {
     return {
       ...verdict,
       blocked: true,
+      hard: true,
       via: "never",
       rule: never,
       why: `Contains something you never want to see: "${never}". ${verdict.r || ""}`.trim()
@@ -213,11 +215,14 @@ function decide(verdict, settings) {
     return { ...verdict, blocked: false, via: "category", why: `${label} is always allowed.` };
   }
 
-  // No explicit rule: fall back to the productivity score.
+  // No explicit rule: fall back to the productivity score. Under the hard
+  // limit there is no way around the block.
   const score = Number.isFinite(verdict.s) ? verdict.s : 100;
+  const hard = score < hardLimit(settings);
   return {
     ...verdict,
-    blocked: score < settings.threshold,
+    blocked: hard || score < settings.threshold,
+    hard,
     via: "score",
     why: verdict.r || `Scored ${score}/100 for your goals.`
   };
@@ -225,13 +230,15 @@ function decide(verdict, settings) {
 
 /* Smart mode: is this answer worth having Gemini actually watch the video?
    Yes when the model said the details did not reveal the content, or when
-   the score is close enough to the line that the content could flip it. */
+   the score is close enough to either line that the content could flip it —
+   the hard limit included, since a block under it has no way around. */
 function worthWatching(decided, settings) {
   if (!decided || decided.via === "local" || decided.d) return false;
   if (decided.u === false) return true;
+  const lines = [settings.threshold, hardLimit(settings)].filter((line) => line > 0);
   return decided.via === "score" &&
     Number.isFinite(decided.s) &&
-    Math.abs(decided.s - settings.threshold) < NEAR_THRESHOLD;
+    lines.some((line) => Math.abs(decided.s - line) < NEAR_THRESHOLD);
 }
 
 /* Why Gemini cannot watch this one, or null if it can. Google only fetches
@@ -865,6 +872,34 @@ async function review(item, settings) {
   return fallback ? { ...fallback, skipped } : null;
 }
 
+/* ---------------------------------------------------------- watch anyway --- */
+
+/* Days since 1970 on your own clock, so a new day starts at your midnight. */
+function localDay() {
+  const now = new Date();
+  return Math.floor((now.getTime() - now.getTimezoneOffset() * 60000) / 86400000);
+}
+
+/* How many "Watch anyway" are left today (null = no limit), and with take,
+   uses one up. One at a time, so two tabs cannot both spend the last one. */
+let anywayQueue = Promise.resolve();
+
+function anyway(settings, take) {
+  const run = anywayQueue.then(async () => {
+    const limit = settings.anywayPerDay;
+    if (!(limit >= 0)) return { ok: true, left: null, limit: null };
+    const { anyway: used } = await ext.storage.local.get("anyway");
+    const today = used?.day === localDay() ? used.count : 0;
+    const left = Math.max(0, limit - today);
+    if (!take) return { ok: true, left, limit };
+    if (!left) return { ok: false, left: 0, limit };
+    await ext.storage.local.set({ anyway: { day: localDay(), count: today + 1 } });
+    return { ok: true, left: left - 1, limit };
+  });
+  anywayQueue = run.catch(() => {});
+  return run;
+}
+
 /* -------------------------------------------------------------- messages --- */
 
 /* Open the settings page on install so the API key field is impossible to miss
@@ -925,11 +960,13 @@ ext.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       }
 
       if (msg?.type === "verse") {
-        // Days since 1970 on your own clock, so the verse changes at your midnight.
-        const now = new Date();
-        const day = Math.floor((now.getTime() - now.getTimezoneOffset() * 60000) / 86400000);
-        const [ref, text] = VERSES[day % VERSES.length];
+        const [ref, text] = VERSES[localDay() % VERSES.length];
         sendResponse({ ok: true, ref, text });
+        return;
+      }
+
+      if (msg?.type === "anyway") {
+        sendResponse(await anyway(await getSettings(), msg.take));
         return;
       }
 
@@ -962,7 +999,7 @@ ext.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           sendResponse({ ok: false, error: "Your key returned no usable text models." });
           return;
         }
-        await ext.storage.local.set({ settings: { ...settings, knownModels: models } });
+        await saveSettings({ knownModels: models });
         sendResponse({ ok: true, models, suggested: pickBestModel(models) });
         return;
       }

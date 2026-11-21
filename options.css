@@ -6,6 +6,7 @@
   --line: #dfe2e8;
   --accent: #2563eb;
   --ok: #15803d;
+  --warn: #d97706;
   --err: #b91c1c;
 }
 
@@ -18,6 +19,7 @@
     --line: #2a2e37;
     --accent: #60a5fa;
     --ok: #4ade80;
+    --warn: #fbbf24;
     --err: #f87171;
   }
 }
@@ -125,6 +127,20 @@ hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
   font-weight: 600;
   font-size: 16px;
 }
+.slider-label { display: block; font-size: 13px; }
+
+/* The score from 0 to 100 as three zones: blocked for good, blocked with
+   "Watch anyway", plays. options.js sets where the lines are. */
+.zones {
+  flex: 1;
+  height: 8px;
+  margin: 8px 8px 10px; /* the slider thumbs stop 8px short of the track ends */
+  border-radius: 4px;
+  background: linear-gradient(to right,
+    var(--err) 0 var(--hard, 0%),
+    var(--warn) var(--hard, 0%) var(--soft, 50%),
+    var(--ok) var(--soft, 50%) 100%);
+}
 
 button {
   padding: 9px 16px;
@@ -148,6 +164,21 @@ button.primary:hover { filter: brightness(1.08); }
 .status { font-size: 12.5px; color: var(--muted); }
 .status.ok { color: var(--ok); }
 .status.err { color: var(--err); }
+.status.warn { color: var(--warn); }
+
+/* A Strict mode change that is waiting for its delay. */
+.pending {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+.pending[hidden] { display: none; }
+.pending span { flex: 1; }
 
 .bar {
   position: fixed;

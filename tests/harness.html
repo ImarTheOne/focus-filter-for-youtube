@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Focus Filter test page</title>
+  <link rel="stylesheet" href="/content.css">
+  <style>
+    body { margin: 0; background: #181818; color: #ccc; font: 13px system-ui; }
+    #movie_player { position: relative; overflow: hidden; background: #000; }
+  </style>
+</head>
+<body>
+<!-- A fake watch page: a player the size given by ?w= and ?h=, whose video
+     records play() and pause() instead of playing anything. -->
+<div id="movie_player" class="html5-video-player"><video></video></div>
+<p id="state"></p>
+<script>
+  const q = new URLSearchParams(location.search);
+  const host = document.querySelector("#movie_player");
+  host.style.width = `${q.get("w") || 854}px`;
+  host.style.height = `${q.get("h") || 480}px`;
+
+  window.video = { playing: false, plays: 0, pauses: 0 };
+  HTMLMediaElement.prototype.play = function () { video.playing = true; video.plays++; return Promise.resolve(); };
+  HTMLMediaElement.prototype.pause = function () { video.playing = false; video.pauses++; };
+  setInterval(() => {
+    document.querySelector("#state").textContent = `video ${video.playing ? "PLAYING" : "paused"} · play() ${video.plays}×`;
+  }, 200);
+
+  // What page-bridge.js reads on the real site.
+  host.getPlayerResponse = () => ({
+    videoDetails: {
+      videoId: q.get("v") || location.pathname.split("/")[2],
+      title: q.get("title") || "Linear algebra, lecture 4",
+      author: q.get("channel") || "Test Channel",
+      channelId: "UCHnyfMqiRRG1u-2MsSQLbXA",
+      shortDescription: "A description.",
+      keywords: ["maths"],
+      lengthSeconds: "900"
+    },
+    microformat: { playerMicroformatRenderer: { ownerProfileUrl: "http://www.youtube.com/@testchannel", category: "Education" } }
+  });
+</script>
+<script src="/verses.js"></script>
+<script src="/tests/mock-ext.js"></script>
+<script src="/page-bridge.js"></script>
+<script src="/common.js"></script>
+<script src="/content.js"></script>
+</body>
+</html>

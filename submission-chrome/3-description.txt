@@ -1,0 +1,63 @@
+Focus Filter for YouTube does not touch your feed while you browse. It steps in
+at the only moment that matters: when you click a video.
+
+The video's details - title, channel, description and tags - are sent to
+Google's Gemini API, which sorts it into one of 20 categories and checks it
+against your rules. Titles lie, so you can also let Gemini actually watch the
+video and judge what is really in it.
+
+HOW IT WORKS
+
+• Set any category to Allow, Block, or Judge.
+• Block is absolute: set Gaming to Block and no gaming video plays, ever.
+• Judge hands the video to a 0-100 productivity score, measured against a
+  description of your goals that you write yourself.
+• Write your own content rules in plain words - "is mostly a sponsor read",
+  "spoils the ending of a film" - and any video that matches is blocked.
+• Zero tolerance: list what you never want to see, and a video that contains
+  any of it is blocked, even when the rest is exactly what you want.
+• Choose how closely to check: Standard (from the details), Smart, the default (Gemini
+  watches the video when the details are not conclusive), or Thorough (Gemini
+  watches every video you open). The blocking screen tells you what is
+  actually in the video.
+• Blocked videos either show a blocking screen, or send you to any address you
+  choose.
+• Optional: a pause before every video. A guided breathing exercise holds it
+  for 5 to 60 seconds, with no skip button, so you decide on purpose. It can
+  show a Bible verse of the day, from a list that ships with the add-on.
+
+WHAT MAKES IT CHEAP
+
+• One API request per video you open, not per video that scrolls past.
+• Verdicts are cached per video, so reopening one is free.
+• Changing your rules costs nothing at all: categories are cached, and your
+  rules are applied on top afterwards.
+• Channel lists and blocked title words are matched inside your browser,
+  work without an API key and never reach Google.
+
+YOU NEED YOUR OWN API KEY
+
+This extension has no server and no subscription. You supply a free Google AI
+Studio key (aistudio.google.com/apikey), and it is stored only in your browser.
+Typical use sits inside Google's free tier.
+
+PRIVACY
+
+Only the details of a video you open (title, channel, description, tags,
+YouTube category, length) are transmitted, and - in Smart or Thorough mode - the
+video's public link, so Google can fetch and watch it. Everything goes only to
+Google's API using your key. No analytics, no telemetry, no developer server.
+Your browsing history, account details and watch history are never touched, and
+the add-on never downloads or uploads video or audio.
+
+OPTIONAL: FILTER THE FEED TOO
+
+If you would rather never see the rubbish in the first place, you can turn on
+feed filtering for the home page, search, sidebar, subscriptions or Shorts.
+It is off by default because it costs an API call for every video that scrolls
+past.
+
+OPEN SOURCE
+
+MIT licensed. No build step, no minification and no remote code: the published
+package is the complete, readable source.

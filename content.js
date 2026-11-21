@@ -103,10 +103,14 @@ function pageSurface() {
   return null;
 }
 
-function shouldFilter(record) {
-  if (record.isShort) return settings.surfaces.shorts;
+/* How a tile is filtered here: "all" removes every blocked video, "hard" only
+   the ones under your hard limit (the home page, when you asked for that),
+   and null leaves the tile alone. */
+function filterMode(record) {
   const surface = pageSurface();
-  return surface ? settings.surfaces[surface] === true : false;
+  const on = record.isShort ? settings.surfaces.shorts : surface && settings.surfaces[surface];
+  if (on === true) return "all";
+  return surface === "home" && settings.hardHome && hardLimit(settings) > 0 ? "hard" : null;
 }
 
 /* ---------------------------------------------------------------- render --- */
@@ -128,7 +132,8 @@ function block(el, record, verdict) {
   el.classList.remove("yff-pending");
   pendingSince.delete(el);
 
-  if (settings.blockMode === "hide") {
+  // Under the hard limit there is no "Show anyway", so there is no card either.
+  if (settings.blockMode === "hide" || verdict.hard) {
     el.classList.add("yff-hidden");
     return;
   }
@@ -175,14 +180,12 @@ function block(el, record, verdict) {
   el.append(card);
 }
 
-function applyVerdict(el, record) {
-  if (revealed.has(record.id) || unjudged.has(record.id)) {
-    release(el);
-    return true;
-  }
+function applyVerdict(el, record, mode) {
   const verdict = verdicts.get(record.id);
-  if (!verdict) return false;
-  if (verdict.blocked) block(el, record, verdict);
+  if (verdict?.hard) block(el, record, verdict);
+  else if (revealed.has(record.id) || unjudged.has(record.id)) release(el);
+  else if (!verdict) return false;
+  else if (verdict.blocked && mode === "all") block(el, record, verdict);
   else release(el);
   return true;
 }
@@ -192,7 +195,7 @@ function applyVerdict(el, record) {
 function scan() {
   // With feed filtering off, the page is left completely alone: no tiles are
   // touched, nothing is queued, and nothing is sent anywhere until you click.
-  if (!active || !anySurfaceEnabled(settings)) return;
+  if (!active || !filtersFeed(settings)) return;
 
   for (const el of document.querySelectorAll(CONTAINERS)) {
     // Lockup cards nest inside rich-item wrappers; only handle the outermost.
@@ -209,7 +212,7 @@ function scan() {
     if (!record) {
       // Real tile, title not rendered yet: hide it so nothing flashes past.
       const isShort = /\/shorts\//.test(link.getAttribute("href"));
-      if (shouldFilter({ isShort }) && !verdicts.has(id) && !unjudged.has(id) && !revealed.has(id)) {
+      if (filterMode({ isShort }) && !verdicts.has(id) && !unjudged.has(id) && !revealed.has(id)) {
         markPending(el);
       }
       continue;
@@ -219,12 +222,13 @@ function scan() {
     if (el.dataset.yffId && el.dataset.yffId !== record.id) release(el);
     el.dataset.yffId = record.id;
 
-    if (!shouldFilter(record)) {
+    const mode = filterMode(record);
+    if (!mode) {
       release(el);
       continue;
     }
 
-    if (applyVerdict(el, record)) continue;
+    if (applyVerdict(el, record, mode)) continue;
 
     markPending(el);
     if (!queued.has(record.id)) queued.set(record.id, record);
@@ -426,14 +430,20 @@ function actions(...buttons) {
   return row;
 }
 
-function showOverlay(id, verdict) {
+/* budget is how many "Watch anyway" are left today: { left, limit }, with
+   left null when there is no limit. */
+function showOverlay(id, verdict, budget) {
   const overlay = overlayShell("yff-overlay");
   if (!overlay) return false;
 
+  // Between the hard limit and the threshold a video is blocked, but not bad.
+  const limit = hardLimit(settings);
   let heading = "Blocked by your rules";
   if (verdict.via === "never") heading = "Blocked — contains something you never want to see";
   else if (verdict.via === "rule") heading = "Blocked — matches one of your content rules";
   else if (verdict.via === "category") heading = `Blocked — ${categoryLabel(verdict.c)}`;
+  else if (verdict.hard) heading = `Blocked for good — ${verdict.s}/100, under your hard limit of ${limit}`;
+  else if (verdict.via === "score" && limit > 0) heading = `You shouldn't watch this, but it's not bad — ${verdict.s}/100`;
   else if (verdict.via === "score") heading = `Blocked — ${verdict.s}/100 for your goals`;
   else if (verdict.via === "unchecked") heading = "Blocked — this video could not be checked";
   overlay.append(line("yff-overlay-title", heading), line("yff-overlay-reason", verdict.why));
@@ -453,15 +463,33 @@ function showOverlay(id, verdict) {
         : "";
   if (note) overlay.append(line("yff-overlay-note", note));
 
+  // No way around it in Insane mode, under the hard limit, or once today's
+  // "Watch anyway" are used up.
+  const spent = budget.left === 0;
+  if (spent && !insane() && !verdict.hard) {
+    overlay.append(line("yff-overlay-note", budget.limit === 0
+      ? "Strict mode allows no \"Watch anyway\"."
+      : `${budget.limit === 1 ? "Today's one" : `All ${budget.limit} of today's`} "Watch anyway" used up. ` +
+        "You get them back at midnight."));
+  }
+
   // replace(), so going back does not land on the blocked video again.
-  overlay.append(insane()
+  overlay.append(insane() || verdict.hard || spent
     ? actions(
       button("Back to YouTube home", true, () => location.replace(`${location.origin}/`)),
       button("Take me back", false, () => history.back())
     )
     : actions(
       button("Take me back", true, () => history.back()),
-      button("Watch anyway", false, () => {
+      button(budget.left === null ? "Watch anyway" : `Watch anyway (${budget.left} left today)`, false, async () => {
+        if (budget.left !== null) {
+          // Another tab may have spent the last one meanwhile.
+          const res = await ext.runtime.sendMessage({ type: "anyway", take: true }).catch(() => null);
+          if (!res?.ok) {
+            showOverlay(id, verdict, { left: 0, limit: budget.limit });
+            return;
+          }
+        }
         revealed.add(id);
         removeOverlay();
         releasePlayback(true);
@@ -723,8 +751,11 @@ async function gateWatchPage() {
     location.replace(target.url);
     return;
   }
+  // A counter that cannot be read counts as used up, but only with a limit set.
+  const res = await ext.runtime.sendMessage({ type: "anyway" }).catch(() => null);
+  const budget = res?.ok ? res : { left: settings.anywayPerDay >= 0 ? 0 : null, limit: settings.anywayPerDay };
   // The player may not be mounted yet, so keep trying for a few seconds.
-  for (let i = 0; i < 10 && !stale() && !showOverlay(id, verdict); i++) await sleep(400);
+  for (let i = 0; i < 10 && !stale() && !showOverlay(id, verdict, budget); i++) await sleep(400);
 }
 
 /* ------------------------------------------------------------------ boot --- */
@@ -747,7 +778,7 @@ let observer = null;
 /* Only watch the DOM when something actually filters the feed. Otherwise the
    observer would fire on every YouTube render for no reason. */
 function syncObserver() {
-  const wanted = active && anySurfaceEnabled(settings);
+  const wanted = active && filtersFeed(settings);
   if (wanted && !observer) {
     observer = new MutationObserver(scheduleScan);
     observer.observe(document.documentElement, { childList: true, subtree: true });

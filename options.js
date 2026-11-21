@@ -20,7 +20,7 @@ async function refreshApiOriginGrant() {
 function flash(el, message, kind) {
   el.textContent = message;
   el.className = `status ${kind || ""}`.trim();
-  if (kind !== "err") setTimeout(() => { if (el.textContent === message) el.textContent = ""; }, 4000);
+  if (kind !== "err" && kind !== "warn") setTimeout(() => { if (el.textContent === message) el.textContent = ""; }, 4000);
 }
 
 function thresholdLabel(value) {
@@ -139,7 +139,8 @@ function summariseRules() {
 }
 
 async function load() {
-  const settings = await getSettings();
+  // As saved: with Strict mode off, its settings are kept here even though they do nothing.
+  const settings = await getStoredSettings();
 
   fillModels(settings.knownModels.length ? settings.knownModels : FALLBACK_MODELS, settings.model);
 
@@ -147,6 +148,8 @@ async function load() {
   $("#ageConfirmed").checked = !!settings.ageConfirmed;
   $("#goals").value = settings.goals;
   $("#threshold").value = settings.threshold;
+  $("#hardThreshold").value = settings.hardThreshold;
+  $("#hardHome").checked = settings.hardHome;
   $("#cacheTtlDays").value = settings.cacheTtlDays;
   $("#shortsAlwaysTrash").checked = settings.shortsAlwaysTrash;
   $("#enforceWatch").checked = settings.enforceWatch;
@@ -154,6 +157,11 @@ async function load() {
   $("#breatheSeconds").value = String(settings.breatheSeconds);
   $("#verse").checked = settings.verse;
   $("#insane").checked = settings.insane;
+  $("#strict").checked = settings.strict;
+  $("#strictDelayHours").value = String(settings.strictDelayHours);
+  showPending(settings.strictPending);
+  $("#anywayLimit").checked = settings.anywayPerDay >= 0;
+  $("#anywayPerDay").value = settings.anywayPerDay >= 0 ? settings.anywayPerDay : DEFAULTS.anywayPerDay;
   $("#allowChannels").value = settings.allowChannels.join("\n");
   $("#blockChannels").value = settings.blockChannels.join("\n");
   $("#blockKeywords").value = settings.blockKeywords.join("\n");
@@ -165,7 +173,7 @@ async function load() {
     const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
     if (input) input.checked = true;
   }
-  syncReviewMode();
+  syncStrict();
   renderCategoryRules(settings.categoryRules || {});
 
   for (const box of document.querySelectorAll("[data-surface]")) {
@@ -180,11 +188,33 @@ async function load() {
   if (settings.apiKey && !settings.knownModels.length) refreshModels({ silent: true });
 }
 
+function showPending(pending) {
+  $("#strictPending").hidden = !pending;
+  if (pending) {
+    $("#strictPendingText").textContent =
+      `Waiting: ${describeChanges(pending.changes)}. Takes effect ${formatWhen(pending.at)}.`;
+  }
+}
+
+/* Strict mode's settings only show, and only count, while it is on. */
+function syncStrict() {
+  $("#strictOptions").hidden = !$("#strict").checked;
+  $("#anywayPerDay").disabled = !$("#anywayLimit").checked;
+  syncReviewMode();
+  syncThreshold();
+}
+
+/* "Watch anyway" as the form stands: null = no daily limit. */
+function anywayLimit() {
+  if (!$("#strict").checked || !$("#anywayLimit").checked) return null;
+  return Math.max(0, Math.round(Number($("#anywayPerDay").value) || 0));
+}
+
 /* The watching options only matter when something can trigger a watch.
    Insane mode always watches, always waits paused and skips no channel. */
 function syncReviewMode() {
   const mode = document.querySelector('input[name="reviewMode"]:checked')?.value || "smart";
-  const insane = $("#insane").checked;
+  const insane = $("#strict").checked && $("#insane").checked;
   $("#deepOptions").hidden = mode === "standard" && !insane;
   for (const input of document.querySelectorAll('input[name="deepWhile"]')) input.disabled = insane;
   $("#allowNote").hidden = !insane;
@@ -203,10 +233,34 @@ function syncReviewMode() {
         "catches what those give away. Pick Smart or Thorough so Gemini watches the video.";
 }
 
+/* The hard limit sits at or under the threshold, so dragging one slider past
+   the other takes the other along. */
 function syncThreshold() {
-  const value = Number($("#threshold").value);
+  const main = $("#threshold");
+  const hard = $("#hardThreshold");
+  // In Strict mode the threshold cannot go under the hard limit: lowering the
+  // hard limit is what the delay guards.
+  if ($("#strict").checked && Number(hard.value) > Number(main.value)) main.value = hard.value;
+  const value = Number(main.value);
+  const limit = Number(hard.value);
+
   $("#thresholdOut").textContent = value;
   $("#thresholdHint").textContent = `Videos scoring under ${value} are blocked. ${thresholdLabel(value)}`;
+  $("#hardThresholdOut").textContent = limit || "Off";
+  const daily = anywayLimit();
+  const anyway = daily === null ? "\"Watch anyway\" is there"
+    : daily === 0 ? "\"Watch anyway\" is switched off below"
+      : `"Watch anyway" works ${daily === 1 ? "once" : `${daily} times`} a day`;
+  $("#anywayUnit").textContent = Number($("#anywayPerDay").value) === 1 ? "time a day" : "times a day";
+  const zones = [`Under ${limit}: blocked, with no way to watch it.`];
+  if (value > limit) zones.push(`${limit} to ${value - 1}: blocked, but ${anyway}.`);
+  zones.push(`${value} and up: plays.`);
+  $("#hardThresholdHint").textContent = limit
+    ? zones.join(" ")
+    : `Off: every blocked video is treated alike, and ${anyway}. Drag it up to block the worst videos for good.`;
+  $("#zones").style.setProperty("--hard", `${limit}%`);
+  $("#zones").style.setProperty("--soft", `${value}%`);
+  $("#hardHome").disabled = !limit;
 }
 
 /* Google's terms make the 18+ confirmation a precondition for using a key at
@@ -230,7 +284,7 @@ async function save() {
   }
 
   if ($("#apiKey").value.trim() && !ageGateOk("#saveResult")) return false;
-  if ($("#insane").checked && !$("#apiKey").value.trim()) {
+  if ($("#strict").checked && $("#insane").checked && !$("#apiKey").value.trim()) {
     flash($("#saveResult"), "Not saved — Insane mode needs an API key to check anything.", "err");
     return false;
   }
@@ -244,12 +298,16 @@ async function save() {
   $("#redirectUrl").value = redirect.url;
   $("#redirectResult").textContent = "";
 
-  await saveSettings({
+  const waiting = (await getStoredSettings()).strictPending?.at;
+  const saved = await saveSettings({
     apiKey: $("#apiKey").value.trim(),
     ageConfirmed: $("#ageConfirmed").checked,
     model: $("#model").value,
     goals: $("#goals").value,
     threshold: Number($("#threshold").value),
+    hardThreshold: Number($("#hardThreshold").value),
+    strictDelayHours: Number($("#strictDelayHours").value),
+    hardHome: $("#hardHome").checked,
     cacheTtlDays: Math.max(0, Number($("#cacheTtlDays").value) || 0),
     shortsAlwaysTrash: $("#shortsAlwaysTrash").checked,
     enforceWatch: $("#enforceWatch").checked,
@@ -257,6 +315,8 @@ async function save() {
     breatheSeconds: Number($("#breatheSeconds").value) || DEFAULTS.breatheSeconds,
     verse: $("#verse").checked,
     insane: $("#insane").checked,
+    strict: $("#strict").checked,
+    anywayPerDay: $("#anywayLimit").checked ? Math.max(0, Math.round(Number($("#anywayPerDay").value) || 0)) : -1,
     redirectUrl: redirect.url,
     blockMode: document.querySelector('input[name="blockMode"]:checked')?.value || "hide",
     reviewMode: document.querySelector('input[name="reviewMode"]:checked')?.value || "smart",
@@ -271,7 +331,15 @@ async function save() {
     surfaces
   });
 
-  flash($("#saveResult"), "Saved. Open YouTube tabs pick it up straight away.", "ok");
+  // Open tabs keep the settings they loaded with; only a reload applies these.
+  const pending = saved.strictPending;
+  if (pending && pending.at !== waiting) {
+    flash($("#saveResult"), `Saved, except: ${describeChanges(pending.changes)} — Strict mode holds that until ` +
+      `${formatWhen(pending.at)}. Reload your open YouTube tabs to apply the rest.`, "warn");
+    await load(); // back to what is really in force
+  } else {
+    flash($("#saveResult"), "Saved. Reload your open YouTube tabs so they use the new settings.", "warn");
+  }
   return true;
 }
 
@@ -280,6 +348,13 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshApiOriginGrant();
 
   $("#threshold").addEventListener("input", syncThreshold);
+  $("#hardThreshold").addEventListener("input", syncThreshold);
+  $("#anywayPerDay").addEventListener("input", syncThreshold);
+  $("#cancelPending").addEventListener("click", async () => {
+    showPending((await saveSettings({ strictPending: null })).strictPending);
+    flash($("#saveResult"), "Cancelled. Strict mode stays as it is.", "ok");
+  });
+  for (const box of [$("#strict"), $("#anywayLimit")]) box.addEventListener("change", syncStrict);
   for (const input of document.querySelectorAll('input[name="reviewMode"], #insane, #deepMinutes')) {
     input.addEventListener("change", syncReviewMode);
   }

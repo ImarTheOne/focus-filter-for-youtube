@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Focus Filter for YouTube</title>
+<style>
+  :root {
+    --bg:#ffffff; --fg:#1a1d23; --muted:#5b6472; --line:#e3e7ee;
+    --accent:#1a56db; --code-bg:#f3f5f9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#0f1115; --fg:#e6e9ef; --muted:#98a2b3; --line:#252a33;
+      --accent:#7aa2f7; --code-bg:#1a1f27;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#0f1115; --fg:#e6e9ef; --muted:#98a2b3; --line:#252a33;
+    --accent:#7aa2f7; --code-bg:#1a1f27;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:3rem 1.25rem 5rem; background:var(--bg); color:var(--fg);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1 { font-size:1.9rem; line-height:1.25; margin:0 0 .5rem; letter-spacing:-.02em; }
+  h2 { font-size:1.3rem; margin:2.5rem 0 .75rem; padding-top:1.25rem; border-top:1px solid var(--line); letter-spacing:-.01em; }
+  h3 { font-size:1.05rem; margin:1.75rem 0 .5rem; }
+  p, li { color:var(--fg); }
+  em { color:var(--muted); font-style:italic; }
+  a { color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+  code { background:var(--code-bg); padding:.15em .4em; border-radius:4px;
+          font:13.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; word-break:break-word; }
+  ul { padding-left:1.25rem; }
+  li { margin:.35rem 0; }
+  hr { border:0; border-top:1px solid var(--line); margin:2.5rem 0 1.5rem; }
+  .table-wrap { overflow-x:auto; margin:1rem 0; }
+  table { border-collapse:collapse; width:100%; min-width:32rem; font-size:.94rem; }
+  th, td { border:1px solid var(--line); padding:.6rem .7rem; text-align:left; vertical-align:top; }
+  th { background:var(--code-bg); font-weight:600; }
+  body > main > p:last-of-type { color:var(--muted); font-size:.9rem; }
+</style>
+</head>
+<body>
+<main>
+<h1>Privacy Policy — Focus Filter for YouTube</h1>
+<p><em>Last updated: 21 November 2026</em></p>
+<p>This add-on is designed so that as little as possible leaves your browser. The developer operates no server and receives no data from you of any kind.</p>
+<h2>Who is responsible</h2>
+<p>Focus Filter for YouTube is an independent open-source project developed by a private individual in <strong>Switzerland</strong>. Contact: <a href="mailto:kontoonlyne@gmail.com">kontoonlyne@gmail.com</a></p>
+<p>Because the add-on has no backend, the developer never receives, stores or processes your personal data. The only outbound request the add-on makes goes from <strong>your</strong> browser to <strong>Google</strong>, authenticated with <strong>your own</strong> API key — that is a relationship directly between you and Google, under Google&#x27;s terms.</p>
+<h2>You must be 18 or older</h2>
+<p>Google&#x27;s <a href="https://ai.google.dev/gemini-api/terms">Gemini API terms</a> require every API user to be <strong>18 years of age or older</strong>, and prohibit using the API as part of a service directed towards, or likely to be accessed by, individuals under 18.</p>
+<p>By supplying a key and using this add-on you confirm you are 18 or older. <strong>This add-on is not a parental control</strong>, must not be marketed or configured as one, and must not be set up on a child&#x27;s behalf.</p>
+<h2>What is sent, and to whom</h2>
+<p>When you open a YouTube video, the add-on sends <strong>the video&#x27;s details</strong> to the Google Gemini API (<code>generativelanguage.googleapis.com</code>) so the model can judge it against your rules. The details are the video&#x27;s <strong>title, channel name, description (up to the first 1,500 characters), tags, YouTube category and length</strong>, all read from the page you opened. Your goals text and your two lists of rules (what you never want to see, and your content rules) are sent with them, because they are the question the model is answering. The request is authenticated with <strong>your own Google AI Studio API key</strong>, which you supply.</p>
+<h3>If you let Gemini watch videos</h3>
+<p>The settings page offers three levels of checking. <strong>Standard</strong> sends only the details above. <strong>Smart</strong>, the default, and <strong>Thorough</strong> may also send the <strong>video&#x27;s public link</strong> (<code>https://www.youtube.com/watch?v=…</code>). Google then fetches that video from YouTube itself and processes its pictures and sound to judge what is actually in it. The add-on never downloads, records or uploads the video. It hands Google a link, and Google does the fetching. Only public videos can be watched this way.</p>
+<p>Google&#x27;s servers make that request to YouTube, not the add-on, and it is covered by Google&#x27;s terms, not by anything the developer controls.</p>
+<h3>If you filter the feed</h3>
+<p>Feed filtering is off by default. It is on when you tick a page under <strong>Also filter the feed</strong> (home page, sidebar, search results, subscriptions, Shorts), or tick <strong>Also remove those videos from the YouTube home page</strong> under the hard limit. Then, for each video tile on that page, the add-on sends its <strong>title, channel name, length, the line showing its views and age, and whether it is a Short</strong>, up to 15 tiles per request, so the model can judge it before you click it. No description, tags or link are sent for a tile.</p>
+<p>These are the only network requests the add-on makes. There is no analytics, no telemetry, no error reporting and no server operated by the developer. Your data is never sent to the developer, because there is nowhere for it to be sent.</p>
+<h3>Important: what Google does with it on a free key</h3>
+<p>Google&#x27;s terms distinguish sharply between unpaid and paid use:</p>
+<ul>
+<li><strong>Unpaid (free) API keys</strong> — Google states that it uses the content you submit to &quot;provide, improve, and develop Google products&quot;, and that <strong>human reviewers may read, annotate and process your API input and output</strong>.</li>
+<li><strong>Paid API keys</strong> — Google states that it does <strong>not</strong> use your prompts or the responses to improve its products, and logs data only to detect abuse.</li>
+</ul>
+<p>What is submitted is the details of a video you chose to open, and in Smart or Thorough mode possibly its link, plus your goals and your rules. With feed filtering on, it is also the titles and channels of the videos on the pages you picked. On a free key you should assume that information is retained by Google and may be read by a person. If that matters to you, use a paid key, or restrict the add-on to the channel and title-word lists, which never leave your browser.</p>
+<p>The developer has no influence over any of this and no visibility into it. Google&#x27;s handling is governed solely by Google&#x27;s own terms: <a href="https://ai.google.dev/gemini-api/terms">https://ai.google.dev/gemini-api/terms</a></p>
+<h2>What is never sent</h2>
+<ul>
+<li>Your browsing history as such — no list of pages you have visited is ever compiled, read or transmitted. What <em>is</em> sent is the details of a video at the moment you open it, and with feed filtering on the tiles of the pages you picked, as described above</li>
+<li>Your Google, YouTube or any other account details</li>
+<li>Cookies, watch history, or anything identifying you</li>
+<li>The video itself — the add-on never downloads, captures or uploads video or audio. (In Smart or Thorough mode Google fetches a public video from YouTube by its link; see above.)</li>
+<li>Page contents beyond the details listed above</li>
+</ul>
+<p>Choose <strong>Standard</strong> on the settings page if you never want a video&#x27;s link sent.</p>
+<p>Videos decided by your channel lists or your blocked title words are matched inside your browser and are <strong>never sent anywhere at all</strong>. The pause before a video and the Bible verse of the day send nothing either: the verses ship with the add-on.</p>
+<h2>What is stored, and where</h2>
+<p>Everything is stored locally in your browser profile using the WebExtension storage API. Only your API key ever leaves the browser, and only to Google:</p>
+<ul>
+<li><strong>Your API key.</strong> Stored locally. It is sent to Google with each request, as the <code>x-goog-api-key</code> header — that is what authenticates <em>your</em> request against <em>your</em> Google account. It is never sent anywhere else, and never to the developer.</li>
+<li>Your settings (category rules, both lists of rules, redirect address, channel and title-word lists, goals text)</li>
+<li>A cache of previous verdicts (video ID, category, score, a short reason and, for watched videos, a one-paragraph summary of what is in them), kept for 30 days by default and capped at 5,000 entries</li>
+<li>In Strict mode with a daily limit, how many times you used &quot;Watch anyway&quot; today: a count and the date, nothing about which videos</li>
+</ul>
+<p>Removing the add-on deletes all of it. You can clear the cache at any time from the settings page.</p>
+<h2>How this maps to the Chrome Web Store disclosures</h2>
+<p>The Chrome Web Store makes every extension declare data categories from a fixed list. Its categories are broad, so here is precisely what each one means here:</p>
+<div class="table-wrap"><table><thead><tr><th>Declared</th><th>What it actually is</th></tr></thead><tbody>
+<tr><td><strong>Website content</strong></td><td>The title, channel name, description, tags, YouTube category and length of a video you open, read from the page and sent to Google for judging. With feed filtering on, the title, channel, length and views line of the video tiles on the pages you picked. Nothing else on the page is read.</td></tr>
+<tr><td><strong>Web history</strong></td><td>Chrome&#x27;s definition of this category includes &quot;page title&quot; and URLs. The title of a video you open is sent, and in Smart or Thorough mode its link. No list of visited pages is built, stored or transmitted.</td></tr>
+<tr><td><strong>Authentication information</strong></td><td>Your own Google AI Studio API key, which you paste in yourself. Stored locally; sent only to Google, to authenticate your own request. Never sent to the developer.</td></tr>
+</tbody></table></div>
+<p>Nothing else is declared, and nothing else is collected: no personally identifiable information, no health or financial data, no personal communications, no location, and no user-activity tracking of any kind.</p>
+<h2>Permissions and why they are needed</h2>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>Why</th></tr></thead><tbody>
+<tr><td><code><em>://</em>.youtube.com/*</code></td><td>To read the details of a video you open and to block or redirect it.</td></tr>
+<tr><td><code>https://generativelanguage.googleapis.com/*</code></td><td>To send those details, and optionally the video&#x27;s link, to Google&#x27;s Gemini API for judging.</td></tr>
+<tr><td><code>storage</code></td><td>To save your key, settings and verdict cache locally.</td></tr>
+</tbody></table></div>
+<h2>Your rights</h2>
+<h3>Switzerland (FADP / DSG)</h3>
+<p>The revised Swiss Federal Act on Data Protection (FADP), in force since 1 September 2023, gives you a right of access to personal data held about you. The developer holds <strong>none</strong> — there is no server, no database and no account system, so there is nothing to disclose, correct or delete beyond the data sitting in your own browser profile, which you control and can erase by removing the add-on.</p>
+<p>For the data you send to Google under your own API key, Google is the responsible party. Exercise those rights through your Google account.</p>
+<h3>EU / EEA and UK (GDPR)</h3>
+<p>The same applies. The developer is not a controller or processor of your personal data, because none is received. Google acts as controller for the API requests your key authenticates.</p>
+<h2>Changes</h2>
+<p>Material changes to this policy will be accompanied by a version bump and noted in the add-on&#x27;s release notes.</p>
+<h2>Contact</h2>
+<p>Questions about this policy: <a href="mailto:kontoonlyne@gmail.com">kontoonlyne@gmail.com</a></p>
+<hr>
+<p>YouTube™ and Gemini™ are trademarks of Google LLC. This add-on is an independent project and is not affiliated with, sponsored by or endorsed by Google LLC.</p>
+</main>
+</body>
+</html>

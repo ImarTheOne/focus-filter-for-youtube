@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Focus Filter home test page</title>
+  <link rel="stylesheet" href="/content.css">
+  <style>
+    body { margin: 0; padding: 16px; background: #181818; color: #ccc; font: 13px system-ui; }
+    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    ytd-rich-item-renderer { display: block; position: relative; padding: 12px; min-height: 70px; background: #272727; border-radius: 10px; }
+    a { color: #fff; text-decoration: none; }
+  </style>
+</head>
+<body>
+<!-- A fake YouTube home page: tiles the real content.js finds the way it finds
+     them on youtube.com. "[hard]" or "[soft]" in a title picks the verdict the
+     fake background gives it (see mock-ext.js); the rest are allowed. -->
+<div id="grid">
+  <ytd-rich-item-renderer><a id="video-title" href="/watch?v=tile0000001">Linear algebra, lecture 4</a><ytd-channel-name><span id="text">Test Channel</span></ytd-channel-name></ytd-rich-item-renderer>
+  <ytd-rich-item-renderer><a id="video-title" href="/watch?v=tile0000002">Celebrity feud explained [hard]</a><ytd-channel-name><span id="text">Gossip Daily</span></ytd-channel-name></ytd-rich-item-renderer>
+  <ytd-rich-item-renderer><a id="video-title" href="/watch?v=tile0000003">Funny cat compilation [soft]</a><ytd-channel-name><span id="text">Cats</span></ytd-channel-name></ytd-rich-item-renderer>
+  <ytd-rich-item-renderer><a id="video-title" href="/watch?v=tile0000004">How transistors work</a><ytd-channel-name><span id="text">Engineering</span></ytd-channel-name></ytd-rich-item-renderer>
+  <ytd-rich-item-renderer><a id="video-title" href="/shorts/tile0000005">Prank gone wrong [hard]</a><ytd-channel-name><span id="text">Shorts Guy</span></ytd-channel-name></ytd-rich-item-renderer>
+</div>
+<script src="/verses.js"></script>
+<script src="/tests/mock-ext.js"></script>
+<script src="/common.js"></script>
+<script src="/content.js"></script>
+</body>
+</html>
