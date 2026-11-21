@@ -51,6 +51,11 @@ async function render() {
   if (!settings.apiKey) {
     notice("err", "No API key yet. Open Settings and paste a Google AI Studio key to start filtering.");
   }
+  // Switching filtering off in Strict mode waits too; say so, or the switch just flips back.
+  if (settings.strictPending) {
+    notice("info", `Strict mode, waiting: ${describeChanges(settings.strictPending.changes)}. ` +
+      `Takes effect ${formatWhen(settings.strictPending.at)}.`);
+  }
   const lastError = stored.lastError;
   if (lastError && Date.now() - lastError.at < 10 * 60 * 1000) {
     notice("err", `Last API error: ${lastError.message}`);

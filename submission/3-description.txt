@@ -15,11 +15,13 @@ HOW IT WORKS
 • Optional Strict mode, as strict as you want it: a hard limit under which a
   video is blocked with no "Watch anyway" and disappears from your home page,
   a daily number of "Watch anyway", and Insane mode, where Gemini checks
-  every video before it plays.
+  every video before it plays. Making it less strict waits up to a week, as
+  long as you choose.
 • Write your own content rules in plain words - "is mostly a sponsor read",
   "spoils the ending of a film" - and any video that matches is blocked.
 • Zero tolerance: list what you never want to see, and a video that contains
-  any of it is blocked, even when the rest is exactly what you want.
+  any of it is blocked, even when the rest is exactly what you want - with no
+  "Watch anyway".
 • Choose how closely to check: Standard (from the details), Smart, the default (Gemini
   watches the video when the details are not conclusive), or Thorough (Gemini
   watches every video you open). The blocking screen tells you what is

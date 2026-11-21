@@ -32,10 +32,10 @@ vm.createContext(sandbox);
 const source = ["common.js", "verses.js", "background.js"]
   .map((file) => fs.readFileSync(path.join(root, file), "utf8"))
   .join("\n");
-vm.runInContext(`${source}\nglobalThis.api = { DEFAULTS, VERSES, fold, wordMatcher, localVerdict, decide,
+vm.runInContext(`${source}\nglobalThis.api = { holdBack, saveSettings, DEFAULTS, VERSES, fold, wordMatcher, localVerdict, decide,
   buildSystemPrompt, buildSchema, promptHash, parseList, classify, worthWatching, migrate, applyStrict,
   getSettings, getStoredSettings, localDay };`, sandbox);
-const { DEFAULTS, VERSES, wordMatcher, localVerdict, decide, buildSystemPrompt, buildSchema,
+const { holdBack, saveSettings, DEFAULTS, VERSES, wordMatcher, localVerdict, decide, buildSystemPrompt, buildSchema,
   promptHash, parseList, classify, worthWatching, migrate, applyStrict, getSettings, getStoredSettings,
   localDay } = sandbox.api;
 
@@ -90,6 +90,7 @@ const strict = settings({
 let d = decide({ c: "education", s: 95, z: [2], h: [], r: "A betting sponsor at 12:40." }, strict);
 assert.equal(d.blocked, true, "zero tolerance beats an allowed category and a high score");
 assert.equal(d.via, "never");
+assert.equal(d.hard, true, "zero tolerance: no Watch anyway");
 assert.equal(d.rule, "gambling");
 assert.match(d.why, /gambling.*12:40/);
 d = decide({ c: "education", s: 95, z: [], h: [1] }, strict);
@@ -108,8 +109,8 @@ const zone = (s) => { const v = decide({ c: "music", s, z: [], h: [] }, hard); r
 assert.deepEqual([0, 24, 25, 49, 50, 100].map(zone), ["hard", "hard", "soft", "soft", "plays", "plays"]);
 assert.equal(decide({ c: "music", s: 10 }, applyStrict(settings({ threshold: 50 }))).hard, false,
   "off unless Strict mode is on");
-assert.equal(decide({ c: "music", s: 55 }, settings({ threshold: 40, hardThreshold: 60 })).hard, false,
-  "never above the threshold");
+d = decide({ c: "music", s: 55 }, settings({ threshold: 40, hardThreshold: 60 }));
+assert.deepEqual([d.hard, d.blocked], [true, true], "a lower threshold does not lower the hard limit");
 assert.equal(decide({ c: "gaming", s: 5, z: [], h: [] }, { ...hard, categoryRules: { gaming: "block" } }).hard, undefined,
   "only the score sets it: a category block keeps Watch anyway");
 assert.equal(decide({ c: "education", s: 5, z: [], h: [] }, { ...hard, categoryRules: { education: "allow" } }).blocked, false,
@@ -197,6 +198,37 @@ const ask = (msg) => new Promise((resolve) => sandbox.onMessage(msg, null, resol
   assert.deepEqual(race.map((r) => r.ok).sort(), [false, true], "two tabs cannot both spend the last one");
   store.settings = { ...store.settings, strict: false };
   assert.deepEqual(await take(), { ok: true, left: null, limit: null }, "no limit outside Strict mode");
+
+  // The Strict mode delay: loosening waits, tightening does not.
+  store.settings = { ...DEFAULTS, apiKey: "key-1", strict: true, hardThreshold: 25, anywayPerDay: 3, strictDelayHours: 24 };
+  let saved = await saveSettings({ hardThreshold: 10, anywayPerDay: 5, insane: true, goals: "new goals" });
+  assert.deepEqual([saved.hardThreshold, saved.anywayPerDay, saved.insane, saved.goals], [25, 3, true, "new goals"],
+    "loosening waits; tightening and other settings apply at once");
+  assert.deepEqual({ ...saved.strictPending.changes }, { hardThreshold: 10, anywayPerDay: 5 });
+  assert.ok(Math.abs(saved.strictPending.at - Date.now() - 24 * 3600000) < 5000, "for the delay");
+  assert.equal((await getSettings()).hardThreshold, 25, "not in force yet");
+  saved = await saveSettings({ enabled: false });
+  assert.equal(saved.enabled, true, "the popup's off switch waits too");
+  assert.deepEqual(Object.keys(saved.strictPending.changes).sort(), ["anywayPerDay", "enabled", "hardThreshold"]);
+  saved = await saveSettings({ anywayPerDay: 1 });
+  assert.equal(saved.anywayPerDay, 1);
+  assert.equal(saved.strictPending.changes.anywayPerDay, undefined, "tightening drops the waiting change to it");
+  saved = await saveSettings({ goals: "edited again" });
+  assert.equal(saved.strictPending.changes.hardThreshold, 10, "an unrelated save leaves waiting changes alone");
+  store.settings = { ...store.settings, strictPending: { ...store.settings.strictPending, at: Date.now() - 1 } };
+  const due = await getSettings();
+  assert.deepEqual([due.hardThreshold, due.enabled, due.strictPending], [10, false, null], "applies when its time comes");
+  store.settings = { ...DEFAULTS, apiKey: "key-1", strict: true, strictDelayHours: 24 };
+  assert.equal((await saveSettings({ strict: false })).strict, true);
+  assert.equal((await saveSettings({ strictPending: null })).strictPending, null, "cancelled");
+  assert.equal((await saveSettings({ apiKey: "key-2" })).apiKey, "key-1", "a different key waits");
+  assert.equal((await saveSettings({ strictDelayHours: 168 })).strictDelayHours, 168, "a longer delay at once");
+  store.settings = { ...DEFAULTS, strict: true, strictDelayHours: 0 };
+  assert.equal((await saveSettings({ strict: false })).strict, false, "no delay: at once");
+  store.settings = { ...DEFAULTS, apiKey: "", strict: true };
+  assert.equal((await saveSettings({ apiKey: "first-key" })).apiKey, "first-key", "adding a key is not loosening");
+  assert.equal(holdBack({ ...DEFAULTS, strict: false }, { ...DEFAULTS, enabled: false }).enabled, false,
+    "outside Strict mode nothing waits");
 
   const verse = await ask({ type: "verse" });
   assert.ok(verse.ok && verse.ref && verse.text);

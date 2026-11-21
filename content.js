@@ -760,11 +760,6 @@ async function gateWatchPage() {
 
 /* ------------------------------------------------------------------ boot --- */
 
-function resetAll() {
-  for (const el of document.querySelectorAll(".yff-pending, .yff-hidden, .yff-card-host")) release(el);
-  pendingSince.clear();
-}
-
 async function refreshSettings() {
   settings = await getSettings();
   active = Boolean(settings.enabled && settings.apiKey);
@@ -802,14 +797,18 @@ function start() {
   ext.storage.onChanged.addListener((changes, area) => {
     const change = area === "local" && changes.settings;
     if (!change) return;
-    // The settings page stores a refreshed model list by itself. That changes
-    // nothing here, and must not reset the feed or restart a running check.
-    const comparable = (value) => JSON.stringify({ ...value, knownModels: null });
-    if (comparable(change.oldValue) === comparable(change.newValue)) return;
-    resetAll();
-    verdicts.clear();
-    unjudged.clear();
-    refreshSettings();
+    // A refreshed model list, or a Strict mode change that is only waiting,
+    // changes nothing in force here and must not reload anything.
+    const before = change.oldValue || {};
+    const after = change.newValue || {};
+    const changed = [...new Set([...Object.keys(before), ...Object.keys(after)])]
+      .filter((key) => key !== "knownModels" && key !== "strictPending")
+      .some((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]));
+    if (!changed) return;
+    // Start this tab over with the new settings: a video already let through
+    // would otherwise never be checked against them. The settings page and the
+    // popup say so when you save.
+    location.reload();
   });
 
   refreshSettings();

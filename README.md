@@ -127,7 +127,7 @@ releases independently. `build.sh` warns when they drift apart.
 7. Rewrite the **"What counts as productive for you"** box. This text goes to
    the model word for word and is the biggest lever on quality for every
    category still set to Judge.
-8. Save. Open YouTube tabs pick up the change straight away.
+8. Save. Every open YouTube tab reloads itself so it uses the new settings (a video already let through would otherwise never be checked against them).
 
 ### If you get a 404
 
@@ -239,9 +239,10 @@ a day; set each part as strict as you want.
 | 25–49 | Blocked, with the gentler "You shouldn't watch this, but it's not bad" and a **Watch anyway** button |
 | 50–100 | Plays |
 
-It can never sit above the threshold; dragging one slider past the other takes
-the other along. It only applies to the score: a category set to Block, a
-content rule or the never list still offer **Watch anyway**. **Also remove
+It stands on its own: lowering the threshold does not lower it, and in Strict
+mode the threshold slider stops at the hard limit. It applies to the score; a
+category set to Block or a content rule still offer **Watch anyway** (the never
+list never does). **Also remove
 those videos from the YouTube home page** (ticked by default) judges the home
 page as it loads and hides only the tiles under the hard limit, with no "Show
 anyway" card; everything else on the home page stays. That costs one API call
@@ -262,8 +263,22 @@ closed: a video that cannot be identified or checked stays blocked. A blocked
 video offers **Back to YouTube home**. Insane mode needs an API key; the
 settings page will not save it without one.
 
+**A delay before it gets less strict.** While Strict mode is on, a saved change
+that loosens it does not apply at once: it waits for the delay you pick (no
+delay, 1 hour, 1 day by default, 3 days, 1 week) and every new loosening change
+restarts the wait. Loosening means switching Strict mode or filtering off (the
+popup's switch included), a lower hard limit, more "Watch anyway", Insane mode
+or the home page option off, a shorter delay, or a different API key
+(`GUARDED` and `holdBack()` in `common.js`, applied inside `saveSettings`).
+Making it stricter works at once. The settings page shows what waits and until
+when, with **Cancel, stay strict**; the popup shows it too. Once the time has
+come, the change counts as saved the next time the settings are read; open tabs
+pick it up when reloaded. The rest of the filter (goals, rules, categories,
+channel lists, threshold) stays freely editable.
+
 **Upgrading from 1.3:** whoever had Insane mode on finds Strict mode on, with
-the hard limit off and no daily limit, so nothing they did not choose changes.
+the hard limit off, no daily limit and no delay, so nothing they did not choose
+changes.
 
 ### Category rules
 
@@ -306,7 +321,10 @@ One thing per line, in plain words, up to 20. A video that contains any of it
 is blocked completely, even when it is only a small part and the rest is
 exactly what you want; this beats category rules and the score. When Gemini
 watches a video, one occurrence is enough — a scene, a sentence, a sponsor
-segment — and the blocking screen says what it was and roughly when.
+segment — and the blocking screen says what it was and roughly when. There is
+no **Watch anyway** for it, in any mode: the screen only offers **Back to
+YouTube home** and **Take me back**, and in a filtered feed the tile is removed
+without a "Show anyway" card.
 
 How well this works depends on what Gemini gets to see, and the settings page
 says so under the list: from the details alone only what the title, description
@@ -337,14 +355,14 @@ rather than every video you open.
 | Setting | Notes |
 | --- | --- |
 | **How closely to check** | Standard / Smart / Thorough, plus how many minutes to watch and whether to wait paused or keep playing. |
-| **Never show me this** | Zero tolerance: any trace of it blocks the video, whatever the rest is. |
+| **Never show me this** | Zero tolerance: any trace of it blocks the video, whatever the rest is, with no **Watch anyway**. |
 | **Content rules** | Plain-language block rules for what a video is, as a whole or in substantial part. |
 | **Category rules** | Allow / Block / Judge per category. Absolute — Block means blocked whatever it scores. |
 | **Send me here instead** | Where a blocked video sends you. Must be outside YouTube. Leave empty for a blocking screen with a **Watch anyway** button. |
 | **Strictness** | The score below which a video is blocked. Applies *only* to categories left on Judge. |
 | **Channels and title words** | Always-allow and always-block, by name (whole words, `*` for endings), @handle or link. Matched in the browser, no key needed. |
 | **Pause before every video** | Off. A guided breathing pause of 5–60 s (default 25), no skip, before every video; optional Bible verse of the day. Needs no key. |
-| **Strict mode** | Off. Holds the hard limit (no **Watch anyway** under it, optionally hidden from the home page), the daily number of **Watch anyway**, and Insane mode (Gemini watches every video before it plays, no skip, fails closed). |
+| **Strict mode** | Off. Holds the hard limit (no **Watch anyway** under it, optionally hidden from the home page), the daily number of **Watch anyway**, and Insane mode (Gemini watches every video before it plays, no skip, fails closed). Loosening it waits for a delay you pick (1 day by default). |
 | **Also filter the feed** | Off. Turn on to hide tiles before you click them. |
 
 ## Design decisions you may want to change

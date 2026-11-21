@@ -331,14 +331,14 @@ async function save() {
     surfaces
   });
 
-  // Open tabs keep the settings they loaded with; only a reload applies these.
+  // Every open YouTube tab reloads itself on the change (content.js).
   const pending = saved.strictPending;
   if (pending && pending.at !== waiting) {
     flash($("#saveResult"), `Saved, except: ${describeChanges(pending.changes)} — Strict mode holds that until ` +
-      `${formatWhen(pending.at)}. Reload your open YouTube tabs to apply the rest.`, "warn");
+      `${formatWhen(pending.at)}. Open YouTube tabs reload for anything else you changed.`, "warn");
     await load(); // back to what is really in force
   } else {
-    flash($("#saveResult"), "Saved. Reload your open YouTube tabs so they use the new settings.", "warn");
+    flash($("#saveResult"), "Saved. Your open YouTube tabs reload to use the new settings.", "warn");
   }
   return true;
 }

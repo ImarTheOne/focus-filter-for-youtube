@@ -35,7 +35,12 @@ try {
   await options.waitForSelector("#neverRules");
   check("settings page has the new cards", await options.evaluate(() =>
     Boolean(document.querySelector("#neverRules") && document.querySelector("#breatheSeconds") && document.querySelector("#verse"))));
-  const configure = (patch) => options.evaluate((p) => saveSettings(p), patch);
+  // Saving reloads every open YouTube tab; park the test tab first, so that
+  // reload cannot race the next page.goto.
+  const configure = async (patch) => {
+    await page.goto("about:blank");
+    return options.evaluate((p) => saveSettings(p), patch);
+  };
   const verse = await options.evaluate(() => browser.runtime.sendMessage({ type: "verse" }));
   check("background answers with today's verse", Boolean(verse?.ok && verse.text), `${verse?.ref}: ${String(verse?.text).slice(0, 50)}…`);
 

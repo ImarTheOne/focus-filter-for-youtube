@@ -48,7 +48,7 @@
     soft: { blocked: true, via: "score", s: 35, c: "entertainment", why: "Light fun, little substance." },
     hard: { blocked: true, hard: true, via: "score", s: 10, c: "drama", why: "Pure celebrity gossip." },
     never: {
-      blocked: true, via: "never", c: "education", d: true,
+      blocked: true, hard: true, via: "never", c: "education", d: true,
       why: 'Contains something you never want to see: "gambling". A betting sponsor segment at 12:40.',
       m: "A maths lecture on probability with a betting sponsor read in the middle."
     }
@@ -56,7 +56,10 @@
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const messages = [];
   let used = Number(q.get("used")) || 0;
-  window.mock = { messages, store };
+  const listeners = [];
+  // What another page saving new settings looks like to this one.
+  const change = (newValue) => listeners.forEach((fn) => fn({ settings: { oldValue: store.settings, newValue } }, "local"));
+  window.mock = { messages, store, change };
 
   globalThis.chrome = {
     runtime: {
@@ -94,7 +97,7 @@
     },
     permissions: { contains: async () => true, request: async () => true },
     storage: {
-      onChanged: { addListener() {} },
+      onChanged: { addListener: (fn) => listeners.push(fn) }, // mock.change() calls them
       local: {
         get: async (key) => ({ [key]: store[key] }),
         set: async (patch) => {
